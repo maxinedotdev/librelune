@@ -23,11 +23,14 @@ import androidx.glance.unit.ColorProvider
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.widget.MoonGlyph
+import dev.maxine.librelune.widget.MoonRenderPhase
 
 @Composable
 fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val size = LocalSize.current
     val compact = size.width <= 120.dp || size.height <= 120.dp
+    val renderPhase = MoonRenderPhase.fromState(state)
+    val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
 
     Box(
         modifier = GlanceModifier
@@ -38,9 +41,11 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            provider = ImageProvider(MoonGlyph.drawableRes(state.phase, settings.hemisphere)),
+            provider = ImageProvider(MoonGlyph.drawableRes(renderPhase, settings.hemisphere)),
             contentDescription = state.phase.displayName,
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(iconPadding),
         )
 
         // Overlay text in the bottom-left corner

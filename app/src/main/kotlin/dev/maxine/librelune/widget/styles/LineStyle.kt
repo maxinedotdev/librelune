@@ -27,12 +27,15 @@ import androidx.glance.unit.ColorProvider
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.widget.MoonLineGlyph
+import dev.maxine.librelune.widget.MoonRenderPhase
 
 @Composable
 fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val size = LocalSize.current
     val compact = size.width <= 120.dp || size.height <= 120.dp
     val lineColor = ColorProvider(Color(0xFFE8EEF9))
+    val renderPhase = MoonRenderPhase.fromState(state)
+    val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
 
     Box(
         modifier = GlanceModifier
@@ -47,11 +50,11 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                provider = ImageProvider(MoonLineGlyph.drawableRes(state.phase, settings.hemisphere)),
+                provider = ImageProvider(MoonLineGlyph.drawableRes(renderPhase, settings.hemisphere)),
                 contentDescription = state.phase.displayName,
                 modifier = GlanceModifier
                     .width(if (compact) 74.dp else 84.dp)
-                    .padding(if (compact) 0.dp else 2.dp),
+                    .padding(iconPadding),
             )
             if (!compact && settings.showPhaseName) {
                 Spacer(GlanceModifier.height(4.dp))

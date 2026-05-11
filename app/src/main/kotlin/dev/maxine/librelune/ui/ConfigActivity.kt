@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -35,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import dev.maxine.librelune.data.Hemisphere
@@ -105,6 +107,7 @@ private fun ConfigScreen(
     var showDaysToFull by remember { mutableStateOf(defaults.showDaysToFull) }
     var showDaysToNew by remember { mutableStateOf(defaults.showDaysToNew) }
     var hemisphere by remember { mutableStateOf(defaults.hemisphere) }
+    var iconPaddingDp by remember { mutableStateOf(defaults.iconPaddingDp.toFloat()) }
 
     LaunchedEffect(appWidgetId) {
         val saved = repo.read(appWidgetId)
@@ -114,6 +117,7 @@ private fun ConfigScreen(
         showDaysToFull = saved.showDaysToFull
         showDaysToNew = saved.showDaysToNew
         hemisphere = saved.hemisphere
+        iconPaddingDp = saved.iconPaddingDp.toFloat()
     }
 
     Scaffold(
@@ -162,6 +166,21 @@ private fun ConfigScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
+            Text("Icon padding", style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = "${iconPaddingDp.toInt()} dp",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.End,
+            )
+            Slider(
+                value = iconPaddingDp,
+                onValueChange = { iconPaddingDp = it.coerceIn(0f, 24f) },
+                valueRange = 0f..24f,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
             Spacer(Modifier.height(8.dp))
 
             Row(
@@ -178,6 +197,7 @@ private fun ConfigScreen(
                             showDaysToFull = showDaysToFull,
                             showDaysToNew = showDaysToNew,
                             hemisphere = hemisphere,
+                            iconPaddingDp = iconPaddingDp.toInt().coerceIn(0, 24),
                         )
                     )
                 }) { Text("Save") }

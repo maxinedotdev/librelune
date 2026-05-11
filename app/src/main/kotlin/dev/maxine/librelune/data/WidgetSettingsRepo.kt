@@ -21,6 +21,7 @@ class WidgetSettingsRepo(private val context: Context) {
     private fun showDaysFullKey(id: Int) = booleanPreferencesKey("widget_${id}_show_days_full")
     private fun showDaysNewKey(id: Int) = booleanPreferencesKey("widget_${id}_show_days_new")
     private fun hemisphereKey(id: Int) = stringPreferencesKey("widget_${id}_hemisphere")
+    private fun iconPaddingKey(id: Int) = stringPreferencesKey("widget_${id}_icon_padding_dp")
 
     fun flow(appWidgetId: Int): Flow<WidgetSettings> =
         context.dataStore.data.map { prefs -> prefs.toSettings(appWidgetId) }
@@ -36,6 +37,7 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs[showDaysFullKey(appWidgetId)] = settings.showDaysToFull
             prefs[showDaysNewKey(appWidgetId)] = settings.showDaysToNew
             prefs[hemisphereKey(appWidgetId)] = settings.hemisphere.name
+            prefs[iconPaddingKey(appWidgetId)] = settings.iconPaddingDp.toString()
         }
     }
 
@@ -47,6 +49,7 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs.remove(showDaysFullKey(appWidgetId))
             prefs.remove(showDaysNewKey(appWidgetId))
             prefs.remove(hemisphereKey(appWidgetId))
+            prefs.remove(iconPaddingKey(appWidgetId))
         }
     }
 
@@ -59,5 +62,7 @@ class WidgetSettingsRepo(private val context: Context) {
         showDaysToNew = this[showDaysNewKey(id)] ?: WidgetSettings().showDaysToNew,
         hemisphere = this[hemisphereKey(id)]?.let { runCatching { Hemisphere.valueOf(it) }.getOrNull() }
             ?: WidgetSettings().hemisphere,
+        iconPaddingDp = this[iconPaddingKey(id)]?.toIntOrNull()?.coerceIn(0, 24)
+            ?: WidgetSettings().iconPaddingDp,
     )
 }
