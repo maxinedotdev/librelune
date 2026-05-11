@@ -62,7 +62,10 @@ class MoonCalculator(
 
             // Observer-facing orientation of the bright limb (zenith angle):
             // MoonIllumination.angle - MoonPosition.parallacticAngle
-            (topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
+            // Clamp to a libration-style nod range so the moon never rotates
+            // far enough to flip a quarter into a "bowl" shape.
+            val raw = (topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
+            raw.coerceIn(-25f, 25f)
         } else {
             0f
         }
