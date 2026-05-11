@@ -50,18 +50,13 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
 
     val renderPhase = MoonRenderPhase.fromState(state)
     val drawableRes = MoonGlyph.drawableRes(renderPhase, settings.hemisphere)
-    val moonProvider = if (state.wobbleDeg == 0f) {
-        ImageProvider(drawableRes)
-    } else {
-        val rotated = remember(drawableRes, state.wobbleDeg, compact) {
-            MoonRotatedBitmapFactory.render(
-                context = context,
-                drawableRes = drawableRes,
-                sizePx = if (compact) 360 else 420,
-                wobbleDeg = state.wobbleDeg,
-            )
-        }
-        ImageProvider(rotated)
+    val moonBitmap = remember(drawableRes, state.wobbleDeg, compact) {
+        MoonRotatedBitmapFactory.render(
+            context = context,
+            drawableRes = drawableRes,
+            sizePx = if (compact) 360 else 420,
+            wobbleDeg = state.wobbleDeg,
+        )
     }
 
     val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
@@ -85,12 +80,11 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .cornerRadius(18.dp)
             .clickable(clickAction),
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            provider = moonProvider,
+            provider = ImageProvider(moonBitmap),
             contentDescription = state.phase.displayName,
             contentScale = ContentScale.Fit,
             modifier = GlanceModifier

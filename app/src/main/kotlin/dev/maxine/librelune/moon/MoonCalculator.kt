@@ -19,12 +19,12 @@ class MoonCalculator(
         val latitude = latitudeDeg.coerceIn(-90.0, 90.0)
         val longitude = longitudeDeg.coerceIn(-180.0, 180.0)
 
-        val illuminationParams = MoonIllumination.compute()
+        // Geocentric illumination (no observer correction) drives the phase
+        // classification: toggling the wobble option must NOT change which phase
+        // bucket the moon falls into.
+        val illumination = MoonIllumination.compute()
             .on(now)
-        if (wobbleEnabled) {
-            illuminationParams.at(latitude, longitude)
-        }
-        val illumination = illuminationParams.execute()
+            .execute()
 
         val nextFull = org.shredzone.commons.suncalc.MoonPhase.compute()
             .on(now.plusDays(1))
@@ -51,6 +51,10 @@ class MoonCalculator(
         val phase = MoonPhase.fromAgeDays(ageDays)
 
         val wobbleDeg = if (wobbleEnabled) {
+            val topoIllumination = MoonIllumination.compute()
+                .on(now)
+                .at(latitude, longitude)
+                .execute()
             val moonPosition = MoonPosition.compute()
                 .on(now)
                 .at(latitude, longitude)
@@ -58,7 +62,7 @@ class MoonCalculator(
 
             // Observer-facing orientation of the bright limb (zenith angle):
             // MoonIllumination.angle - MoonPosition.parallacticAngle
-            (illumination.angle - moonPosition.parallacticAngle).toFloat()
+            (topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
         } else {
             0f
         }

@@ -486,8 +486,15 @@ private fun daysUntilTarget(currentFraction: Double, targetFraction: Double): Do
 }
 
 private fun approximateWobbleDeg(latitudeDeg: Double, phaseFraction: Double): Float {
+    // Visible wobble even at the equator: a base sweep plus a latitude-dependent
+    // term, modulated by the lunar cycle. This matches the spirit of the
+    // observer-facing tilt without requiring the suncalc topocentric pipeline
+    // for the preview.
     val latFactor = (latitudeDeg.coerceIn(-90.0, 90.0) / 90.0)
-    return (latFactor * 18.0 * cos(2.0 * PI * phaseFraction)).toFloat()
+    val cycle = cos(2.0 * PI * phaseFraction)
+    val baseDeg = 12.0
+    val latDeg = 18.0 * latFactor
+    return ((baseDeg + latDeg) * cycle).toFloat()
 }
 
 private const val SYNODIC_MONTH_DAYS = 29.530588853
