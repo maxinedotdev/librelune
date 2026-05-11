@@ -19,7 +19,6 @@ import dev.maxine.librelune.moon.MoonCalculator
 import dev.maxine.librelune.ui.MainActivity
 import dev.maxine.librelune.widget.styles.GraphicsStyle
 import dev.maxine.librelune.widget.styles.LineStyle
-import dev.maxine.librelune.widget.styles.Material3Style
 
 class MoonWidget : GlanceAppWidget() {
 
@@ -41,7 +40,6 @@ class MoonWidget : GlanceAppWidget() {
             GlanceTheme {
                 when (settings.style) {
                     WidgetStyle.LINE -> LineStyle(state, settings, clickAction)
-                    WidgetStyle.MATERIAL3 -> Material3Style(state, settings, clickAction)
                     WidgetStyle.GRAPHICS -> GraphicsStyle(state, settings, clickAction)
                 }
             }
