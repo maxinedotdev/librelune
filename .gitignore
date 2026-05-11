@@ -1,0 +1,10 @@
+.vscode/
+.github/
+
+# Gradle and build artifacts
+.gradle/
+build/
+**/build/
+
+# Local Android SDK configuration
+local.properties

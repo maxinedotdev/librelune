@@ -1,0 +1,6 @@
+# Copy this file to local.properties and set your Android SDK path.
+# Example (macOS):
+# sdk.dir=/Users/your-user/Library/Android/sdk
+
+# Install required packages (command-line tools):
+# sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools" "cmdline-tools;latest"
