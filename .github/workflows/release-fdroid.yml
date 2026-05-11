@@ -50,7 +50,7 @@ jobs:
                   set -euo pipefail
                   if [[ -n "$ANDROID_RELEASE_KEYSTORE_B64" ]]; then
                       KEYSTORE_PATH="$RUNNER_TEMP/librelune-release.jks"
-                      printf '%s' "$ANDROID_RELEASE_KEYSTORE_B64" | base64 -d > "$KEYSTORE_PATH"
+                      printf '%s' "$ANDROID_RELEASE_KEYSTORE_B64" | tr -d '[:space:]' | base64 -d > "$KEYSTORE_PATH"
 
                       STORE_PASSWORD="$(printf '%s' "$ANDROID_RELEASE_STORE_PASSWORD" | tr -d '\r\n')"
                       KEY_ALIAS="$(printf '%s' "$ANDROID_RELEASE_KEY_ALIAS" | tr -d '\r\n')"
