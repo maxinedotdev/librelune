@@ -78,7 +78,7 @@ jobs:
             - name: Clean signing config
               if: always()
               shell: bash
-                            run: rm -f keystore.properties "$RUNNER_TEMP/librelune-release.jks"
+              run: rm -f keystore.properties "$RUNNER_TEMP/librelune-release.jks"
 
             - name: Upload release APK artifact
               uses: actions/upload-artifact@v7
