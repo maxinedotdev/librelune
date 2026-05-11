@@ -39,11 +39,9 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                provider = ImageProvider(MoonGlyph.drawableRes(state.phase)),
+                provider = ImageProvider(MoonGlyph.drawableRes(state.phase, settings.hemisphere)),
                 contentDescription = state.phase.displayName,
                 modifier = GlanceModifier.size(64.dp),
-            // Horizontal mirror for southern hemisphere: once real assets arrive, add
-            // mirrored variants under res/drawable-ldrtl/ and Android will auto-select them.
             )
             if (settings.showPhaseName) {
                 Spacer(GlanceModifier.height(4.dp))

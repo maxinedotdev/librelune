@@ -37,7 +37,7 @@ fun Material3Style(state: MoonState, settings: WidgetSettings, clickAction: Acti
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
-                provider = ImageProvider(MoonGlyph.drawableRes(state.phase)),
+                provider = ImageProvider(MoonGlyph.drawableRes(state.phase, settings.hemisphere)),
                 contentDescription = state.phase.displayName,
                 modifier = GlanceModifier.size(56.dp),
             )

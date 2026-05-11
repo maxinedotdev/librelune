@@ -102,6 +102,11 @@ private fun InfoScreen(state: MoonState, onReconfigure: (() -> Unit)?) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(
+                text = androidx.compose.ui.res.stringResource(dev.maxine.librelune.R.string.nasa_attribution),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

@@ -29,7 +29,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     ) {
         // Full-bleed illustration (placeholder vector now; replace with PNG/WebP in drawable-*)
         Image(
-            provider = ImageProvider(MoonGlyph.drawableRes(state.phase)),
+            provider = ImageProvider(MoonGlyph.drawableRes(state.phase, settings.hemisphere)),
             contentDescription = state.phase.displayName,
             modifier = GlanceModifier.fillMaxSize(),
         )
