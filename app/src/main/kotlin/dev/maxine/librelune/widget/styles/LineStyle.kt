@@ -15,8 +15,6 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
-import androidx.glance.layout.Row
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
@@ -24,6 +22,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.widget.MoonLineBitmapFactory
@@ -38,17 +37,13 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val diameterPct = settings.moonDiameterPct.coerceIn(40, 100)
     val hasAnyText = settings.showPhaseName || settings.showIllumination ||
         settings.showDaysToFull || settings.showDaysToNew
-    // When text is enabled, reserve a fixed text column to the right of the
-    // moon so abbreviated labels (1/4, WaCr, 35%, F+10d, ...) fit even on a
-    // square 1x1 cell. The moon then sizes to whichever of (available height,
-    // available width minus that text column) is smallest, scaled by the
-    // user's diameter setting.
-    val textColumnWidth = if (hasAnyText) 38.dp else 0.dp
-    val widthForMoon = (size.width - textColumnWidth).coerceAtLeast(0.dp)
-    val moonBox = if (widthForMoon < size.height) widthForMoon else size.height
-    val moonDiameter = moonBox * (diameterPct / 100f)
-    val edgeTouch = diameterPct >= 100 && !hasAnyText
+
+    // Moon keeps the full minimum-dimension diameter regardless of text.
+    val minDimension = if (size.width < size.height) size.width else size.height
+    val moonDiameter = minDimension * (diameterPct / 100f)
+    val edgeTouch = diameterPct >= 100
     val effectiveIconPadding = if (edgeTouch) 0.dp else iconPadding
+
     val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
     val strokePx = if (compact) lineStroke * 1.8f else lineStroke * 2.2f
     val moonBitmap = remember(phaseFraction, settings.hemisphere, strokePx, compact) {
@@ -60,6 +55,17 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
         )
     }
 
+    // Place the text on the DARK side of the moon (the empty half of the
+    // square bounding box), so it never overlaps the lit-side curve. Mirrors
+    // exactly how the renderer chooses lit side: north waxing -> right lit,
+    // north waning -> left lit (and inverted in the southern hemisphere).
+    val normalized = ((phaseFraction % 1.0) + 1.0) % 1.0
+    val litRight = when (settings.hemisphere) {
+        Hemisphere.NORTHERN -> normalized < 0.5
+        Hemisphere.SOUTHERN -> normalized >= 0.5
+    }
+    val textAlignment = if (litRight) Alignment.CenterStart else Alignment.CenterEnd
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -67,31 +73,23 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             .clickable(clickAction),
         contentAlignment = Alignment.Center,
     ) {
-        Row(
-            modifier = GlanceModifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Image(
+            provider = ImageProvider(moonBitmap),
+            contentDescription = state.phase.displayName,
+            contentScale = ContentScale.Fit,
+            modifier = GlanceModifier
+                .size(moonDiameter)
+                .padding(effectiveIconPadding),
+        )
+
+        if (hasAnyText) {
             Box(
                 modifier = GlanceModifier
-                    .size(moonDiameter)
-                    .padding(effectiveIconPadding),
-                contentAlignment = Alignment.Center,
+                    .fillMaxSize()
+                    .padding(horizontal = 4.dp),
+                contentAlignment = textAlignment,
             ) {
-                Image(
-                    provider = ImageProvider(moonBitmap),
-                    contentDescription = state.phase.displayName,
-                    contentScale = ContentScale.Fit,
-                    modifier = GlanceModifier.fillMaxSize(),
-                )
-            }
-
-            if (hasAnyText) {
-                Column(
-                    modifier = GlanceModifier
-                        .fillMaxHeight()
-                        .padding(start = 4.dp, end = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                Column {
                     if (settings.showPhaseName) {
                         Text(
                             text = state.phase.shortName,
