@@ -126,6 +126,12 @@ jobs:
                   cd fdroid
                   fdroid update --create-metadata --rename-apks --pretty
 
+            - name: Add Pages landing file
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  cp site/index.html fdroid/repo/index.html
+
             - name: Publish F-Droid repo to gh-pages
               uses: peaceiris/actions-gh-pages@v4
               with:

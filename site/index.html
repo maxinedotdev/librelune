@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Librelune</title>
+  <style>
+    :root {
+      --bg: #091119;
+      --panel: #0f1f2f;
+      --text: #f2f6ff;
+      --muted: #a8bbd5;
+      --accent: #86d7ff;
+      --accent2: #b4ffca;
+      --border: #24415f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1e3550 0%, transparent 60%),
+        radial-gradient(900px 500px at 95% 110%, #173247 0%, transparent 55%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(860px, 100%);
+      background: linear-gradient(180deg, #13273a 0%, var(--panel) 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(32px, 5vw, 48px);
+      letter-spacing: 0.3px;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .actions {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      text-decoration: none;
+      font-weight: 700;
+      color: #05131f;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      padding: 11px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+    .btn.secondary {
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+    }
+    .meta {
+      margin-top: 22px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    code {
+      background: #0a1621;
+      border: 1px solid #1f364d;
+      border-radius: 6px;
+      padding: 2px 6px;
+      color: #d2e7ff;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Librelune</h1>
+    <p>
+      Moon phase widget releases published from GitHub Actions.
+      This page is served from GitHub Pages.
+    </p>
+
+    <div class="actions">
+      <a class="btn" href="./app-release.apk">Download latest APK</a>
+      <a class="btn secondary" href="./index-v1.jar">F-Droid index (legacy)</a>
+      <a class="btn secondary" href="./index-v2.json">F-Droid index (v2)</a>
+      <a class="btn secondary" href="https://github.com/maxinedotdev/librelune">Source on GitHub</a>
+    </div>
+
+    <p class="meta">
+      F-Droid repository URL: <code>https://maxinedotdev.github.io/librelune</code>
+    </p>
+  </main>
+</body>
+</html>
