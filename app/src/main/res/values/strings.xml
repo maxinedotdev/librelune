@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Librelune</string>
-    <string name="widget_name">Moon Phase</string>
-    <string name="configure_widget_title">Configure Widget</string>
-    <string name="placeholder_title">Implementation in progress</string>
+	<string name="app_name">Librelune</string>
+	<string name="widget_name">Moon Phase</string>
+	<string name="configure_widget_title">Configure Widget</string>
+	<string name="placeholder_title">Implementation in progress</string>
 </resources>
