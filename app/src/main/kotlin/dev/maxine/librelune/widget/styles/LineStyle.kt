@@ -76,14 +76,17 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     // (the deepest point of the curve, at vertical mid-height). The
     // quadratic bezier midpoint at t=0.5 is (cx + 0.5*xOffset, cy), with
     // xOffset = r * (1 - 2*illum). Sign follows the lit side.
-    val illumination = ((1.0 - cos(2.0 * Math.PI * normalized)) * 0.5).toFloat()
+    val illumination = (state.illuminationPct.coerceIn(0, 100) / 100f)
     val moonRadius = moonDiameter / 2
     val sideSign = if (litRight) 1f else -1f
     val curveApexOffset = moonRadius * (0.5f * (1f - 2f * illumination)) * sideSign
+    val wobbleCos = cos(Math.toRadians(state.wobbleDeg.toDouble())).toFloat()
     val moonCenterX = size.width / 2
-    val curveApexX = moonCenterX + curveApexOffset
-    val darkRegionWidth = (if (litRight) curveApexX else size.width - curveApexX)
-        .coerceAtLeast(0.dp)
+    val curveApexX = moonCenterX + (curveApexOffset * wobbleCos)
+    val leftSpace = curveApexX.coerceIn(0.dp, size.width)
+    val rightSpace = (size.width - curveApexX).coerceIn(0.dp, size.width)
+    val textOnLeft = leftSpace >= rightSpace
+    val darkRegionWidth = if (textOnLeft) leftSpace else rightSpace
 
     Box(
         modifier = GlanceModifier
@@ -103,7 +106,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
 
         if (hasAnyText && darkRegionWidth > 0.dp) {
             Row(modifier = GlanceModifier.fillMaxSize()) {
-                if (!litRight) {
+                if (!textOnLeft) {
                     Spacer(modifier = GlanceModifier.defaultWeight())
                 }
                 Box(
@@ -154,7 +157,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                         }
                     }
                 }
-                if (litRight) {
+                if (textOnLeft) {
                     Spacer(modifier = GlanceModifier.defaultWeight())
                 }
             }

@@ -42,10 +42,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -56,9 +56,8 @@ import dev.maxine.librelune.data.WidgetStyle
 import dev.maxine.librelune.moon.MoonPhase
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.ui.theme.LibreluneTheme
-import dev.maxine.librelune.widget.MoonGlyph
+import dev.maxine.librelune.widget.MoonGraphicsBitmapFactory
 import dev.maxine.librelune.widget.MoonLineBitmapFactory
-import dev.maxine.librelune.widget.MoonRenderPhase
 import dev.maxine.librelune.widget.MoonWidget
 import kotlinx.coroutines.launch
 import kotlin.math.PI
@@ -364,6 +363,7 @@ private fun MoonPreviewCard(settings: WidgetSettings, phaseFraction: Float) {
             .height(150.dp)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
             .background(MaterialTheme.colorScheme.surfaceContainerLow, shape)
+            .clip(shape)
             .padding(12.dp),
     ) {
         when (settings.style) {
@@ -402,8 +402,7 @@ private fun LinePreview(settings: WidgetSettings, state: MoonState) {
             bitmap = bitmap.asImageBitmap(),
             contentDescription = "Line moon preview",
             modifier = Modifier
-                .weight(1f)
-                .aspectRatio(1f),
+                .size(92.dp),
             contentScale = ContentScale.Fit,
         )
 
@@ -422,19 +421,28 @@ private fun LinePreview(settings: WidgetSettings, state: MoonState) {
 
 @Composable
 private fun GraphicsPreview(settings: WidgetSettings, state: MoonState) {
-    val renderPhase = MoonRenderPhase.fromState(state)
+    val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
+    val wobble = if (settings.wobbleEnabled) state.wobbleDeg else 0f
+    val bitmap = remember(phaseFraction, settings.hemisphere, wobble) {
+        MoonGraphicsBitmapFactory.render(
+            phaseFraction = phaseFraction,
+            hemisphere = settings.hemisphere,
+            sizePx = 420,
+            wobbleDeg = wobble,
+        )
+    }
+
     Row(
         modifier = Modifier.fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Image(
-            painter = painterResource(id = MoonGlyph.drawableRes(renderPhase, settings.hemisphere)),
+            bitmap = bitmap.asImageBitmap(),
             contentDescription = "Graphics moon preview",
             modifier = Modifier
-                .weight(1f)
-                .aspectRatio(1f),
-            contentScale = ContentScale.Crop,
+                .size(92.dp),
+            contentScale = ContentScale.Fit,
         )
 
         Column(
@@ -463,7 +471,7 @@ private fun previewStateFromFraction(phaseFraction: Float, settings: WidgetSetti
         wobbleDeg = if (settings.wobbleEnabled) approximateWobbleDeg(settings.latitudeDeg, normalized) else 0f,
     )
 
-    return base.copy(phase = MoonRenderPhase.fromState(base))
+    return base.copy(phase = MoonPhase.fromAgeDays(base.ageDays))
 }
 
 private fun previewPhaseLabel(phaseFraction: Float): String {

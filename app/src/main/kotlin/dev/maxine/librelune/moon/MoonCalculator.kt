@@ -14,9 +14,15 @@ class MoonCalculator(
     private val longitudeDeg: Double = 0.0,
 ) {
     fun now(now: ZonedDateTime = ZonedDateTime.now(zoneId)): MoonState {
-        val illumination = MoonIllumination.compute()
+        val latitude = latitudeDeg.coerceIn(-90.0, 90.0)
+        val longitude = longitudeDeg.coerceIn(-180.0, 180.0)
+
+        val illuminationParams = MoonIllumination.compute()
             .on(now)
-            .execute()
+        if (wobbleEnabled) {
+            illuminationParams.at(latitude, longitude)
+        }
+        val illumination = illuminationParams.execute()
 
         val nextFull = org.shredzone.commons.suncalc.MoonPhase.compute()
             .on(now.plusDays(1))
@@ -38,12 +44,14 @@ class MoonCalculator(
         val phase = MoonPhase.fromAgeDays(ageDays)
 
         val wobbleDeg = if (wobbleEnabled) {
-            MoonPosition.compute()
+            val moonPosition = MoonPosition.compute()
                 .on(now)
-                .at(latitudeDeg.coerceIn(-90.0, 90.0), longitudeDeg.coerceIn(-180.0, 180.0))
+                .at(latitude, longitude)
                 .execute()
-                .parallacticAngle
-                .toFloat()
+
+            // Observer-facing orientation of the bright limb (zenith angle):
+            // MoonIllumination.angle - MoonPosition.parallacticAngle
+            (illumination.angle - moonPosition.parallacticAngle).toFloat()
         } else {
             0f
         }
