@@ -18,8 +18,6 @@ class MoonCalculator(
             .on(now)
             .execute()
 
-        val phase = MoonPhase.fromLibraryPhase(illumination.closestPhase)
-
         val nextFull = org.shredzone.commons.suncalc.MoonPhase.compute()
             .on(now.plusDays(1))
             .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.FULL_MOON)
@@ -37,6 +35,7 @@ class MoonCalculator(
         // Map it to an age in days within the synodic month [0, 29.530588853].
         val ageDays = ((illumination.phase + 180.0) / 360.0 * 29.530588853)
             .coerceIn(0.0, 29.530588853)
+        val phase = MoonPhase.fromAgeDays(ageDays)
 
         val wobbleDeg = if (wobbleEnabled) {
             MoonPosition.compute()
