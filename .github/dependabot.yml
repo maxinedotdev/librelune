@@ -17,3 +17,7 @@ updates:
     labels:
       - dependencies
       - security
+    ignore:
+      - dependency-name: "actions/upload-artifact"
+        versions:
+          - ">=5"
