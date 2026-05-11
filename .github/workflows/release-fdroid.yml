@@ -47,18 +47,17 @@ jobs:
                       KEYSTORE_PATH="$RUNNER_TEMP/librelune-release.jks"
                       echo "${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}" \
                           | tr -d '[:space:]' | base64 --decode > "$KEYSTORE_PATH"
-                      {
-                          echo "LIBRELUNE_RELEASE_STORE_FILE=$KEYSTORE_PATH"
-                          echo "LIBRELUNE_RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}"
-                          echo "LIBRELUNE_RELEASE_KEY_ALIAS=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}"
-                          echo "LIBRELUNE_RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}"
-                      } >> "$GITHUB_ENV"
+                      echo "LIBRELUNE_RELEASE_STORE_FILE=$KEYSTORE_PATH" >> "$GITHUB_ENV"
                       echo "::notice::Keystore present — APK will be release-signed."
                   else
                       echo "::warning::ANDROID_RELEASE_KEYSTORE_B64 not set — APK will be unsigned."
                   fi
 
             - name: Assemble release APK
+              env:
+                  LIBRELUNE_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+                  LIBRELUNE_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+                  LIBRELUNE_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
               shell: bash
               run: |
                   set -euo pipefail
