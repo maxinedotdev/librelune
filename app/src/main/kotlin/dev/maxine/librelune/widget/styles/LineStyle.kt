@@ -11,11 +11,10 @@ import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.cornerRadius
-import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.height
@@ -55,8 +54,6 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(Color(0x14101521)))
-            .cornerRadius(14.dp)
             .padding(if (edgeTouch) 0.dp else if (compact) 2.dp else 4.dp)
             .clickable(clickAction),
         contentAlignment = Alignment.Center,
@@ -67,6 +64,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             Image(
                 provider = ImageProvider(moonBitmap),
                 contentDescription = state.phase.displayName,
+                contentScale = ContentScale.Fit,
                 modifier = GlanceModifier
                     .size(moonDiameter)
                     .padding(effectiveIconPadding),

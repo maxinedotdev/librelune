@@ -28,10 +28,16 @@ class MoonCalculator(
             .execute()
             .time
 
+        // commons-suncalc's MoonIllumination.phase is an angle in degrees:
+        // -180 = new moon (start), 0 = full moon, +180 = new moon (end of cycle).
+        // Map it to an age in days within the synodic month [0, 29.530588853].
+        val ageDays = ((illumination.phase + 180.0) / 360.0 * 29.530588853)
+            .coerceIn(0.0, 29.530588853)
+
         return MoonState(
             phase = phase,
             illuminationPct = (illumination.fraction * 100.0).roundToInt().coerceIn(0, 100),
-            ageDays = (illumination.phase * 29.530588853).coerceAtLeast(0.0),
+            ageDays = ageDays,
             daysToFull = Duration.between(now, nextFull).toHours().toDouble() / 24.0,
             daysToNew = Duration.between(now, nextNew).toHours().toDouble() / 24.0,
         )
