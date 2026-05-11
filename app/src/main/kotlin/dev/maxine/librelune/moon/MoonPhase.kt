@@ -2,9 +2,9 @@ package dev.maxine.librelune.moon
 
 enum class MoonPhase(val displayName: String, val shortName: String) {
     NEW("New Moon", "New"),
-    WAXING_CRESCENT("Waxing Crescent", "WaCr"),
+    WAXING_CRESCENT("Waxing Crescent", "WxCr"),
     FIRST_QUARTER("First Quarter", "1/4"),
-    WAXING_GIBBOUS("Waxing Gibbous", "WaGi"),
+    WAXING_GIBBOUS("Waxing Gibbous", "WxGi"),
     FULL("Full Moon", "Full"),
     WANING_GIBBOUS("Waning Gibbous", "WnGi"),
     THIRD_QUARTER("Third Quarter", "3/4"),

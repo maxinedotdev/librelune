@@ -63,7 +63,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
             Column {
                 if (settings.showPhaseName) {
                     Text(
-                        text = state.phase.displayName,
+                        text = state.phase.shortName,
                         style = TextStyle(
                             color = ColorProvider(Color.White),
                             fontSize = if (compact) 9.sp else 11.sp,
