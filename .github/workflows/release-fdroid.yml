@@ -50,8 +50,7 @@ jobs:
                   set -euo pipefail
                   if [[ -n "$ANDROID_RELEASE_KEYSTORE_B64" ]]; then
                       KEYSTORE_PATH="$RUNNER_TEMP/librelune-release.jks"
-                      echo "$ANDROID_RELEASE_KEYSTORE_B64" \
-                          | tr -d '[:space:]' | base64 --decode > "$KEYSTORE_PATH"
+                      printf '%s' "$ANDROID_RELEASE_KEYSTORE_B64" | base64 -d > "$KEYSTORE_PATH"
 
                       STORE_PASSWORD="$(printf '%s' "$ANDROID_RELEASE_STORE_PASSWORD" | tr -d '\r\n')"
                       KEY_ALIAS="$(printf '%s' "$ANDROID_RELEASE_KEY_ALIAS" | tr -d '\r\n')"
@@ -174,8 +173,7 @@ jobs:
               run: |
                   set -euo pipefail
                   mkdir -p fdroid
-                  echo "${{ secrets.FDROID_KEYSTORE_B64 }}" \
-                      | tr -d '[:space:]' | base64 --decode > fdroid/fdroid-keystore.jks
+                  printf '%s' "${{ secrets.FDROID_KEYSTORE_B64 }}" | base64 -d > fdroid/fdroid-keystore.jks
 
             - name: Generate fdroid config.py
               shell: bash
