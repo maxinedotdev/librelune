@@ -35,7 +35,7 @@ jobs:
               with:
                   project: "librelune"
                   path: "."
-                  format: "HTML,JSON,SARIF"
+                  format: "SARIF"
                   out: "reports"
                   args: >-
                       --enableRetired
