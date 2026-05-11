@@ -24,7 +24,8 @@ object MoonLineBitmapFactory {
             color = 0xFFE8EEF9.toInt()
         }
 
-        val pad = strokePx * 1.5f
+        // Keep the stroke center one half-stroke from bounds so outer edge can touch container.
+        val pad = strokePx * 0.5f
         val radius = (sizePx / 2f) - pad
         val cx = sizePx / 2f
         val cy = sizePx / 2f

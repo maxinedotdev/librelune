@@ -14,6 +14,7 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
@@ -46,6 +47,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
         Image(
             provider = ImageProvider(MoonGlyph.drawableRes(renderPhase, settings.hemisphere)),
             contentDescription = state.phase.displayName,
+            contentScale = ContentScale.Crop,
             modifier = GlanceModifier
                 .size(moonDiameter)
                 .padding(effectiveIconPadding),
