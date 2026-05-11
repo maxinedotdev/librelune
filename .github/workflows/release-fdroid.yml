@@ -173,7 +173,7 @@ jobs:
               run: |
                   set -euo pipefail
                   mkdir -p fdroid
-                  printf '%s' "${{ secrets.FDROID_KEYSTORE_B64 }}" | base64 -d > fdroid/fdroid-keystore.jks
+                  printf '%s' "${{ secrets.FDROID_KEYSTORE_B64 }}" | tr -d '[:space:]' | base64 -d > fdroid/fdroid-keystore.jks
 
             - name: Generate fdroid config.py
               shell: bash
