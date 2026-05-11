@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -45,7 +46,7 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.activity)
     implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.material3)
+    implementation(libs.compose.material3)
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)

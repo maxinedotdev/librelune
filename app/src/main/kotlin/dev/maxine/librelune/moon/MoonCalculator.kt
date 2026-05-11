@@ -17,16 +17,14 @@ class MoonCalculator(
         val phase = MoonPhase.fromLibraryPhase(illumination.closestPhase)
 
         val nextFull = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now)
+            .on(now.plusDays(1))
             .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.FULL_MOON)
-            .forward()
             .execute()
             .time
 
         val nextNew = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now)
+            .on(now.plusDays(1))
             .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.NEW_MOON)
-            .forward()
             .execute()
             .time
 

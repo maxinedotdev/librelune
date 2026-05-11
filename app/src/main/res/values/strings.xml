@@ -4,5 +4,6 @@
 	<string name="widget_name">Moon Phase</string>
 	<string name="configure_widget_title">Configure Widget</string>
 	<string name="placeholder_title">Implementation in progress</string>
-	<string name="nasa_attribution">Moon phase images courtesy of NASA\'s Scientific Visualization Studio (SVS IDs 4874 &amp; 4875). NASA content is in the public domain.</string>
+	<string name="nasa_attribution">Moon phase images courtesy of NASA\'s Scientific Visualization
+		Studio (SVS IDs 4874 &amp; 4875). NASA content is in the public domain.</string>
 </resources>
