@@ -36,9 +36,18 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
     val lineStroke = settings.lineStrokeDp.coerceIn(1, 8).toFloat()
     val diameterPct = settings.moonDiameterPct.coerceIn(40, 100)
-    val minDimension = if (size.width < size.height) size.width else size.height
-    val moonDiameter = minDimension * (diameterPct / 100f)
-    val edgeTouch = diameterPct >= 100
+    val hasAnyText = settings.showPhaseName || settings.showIllumination ||
+        settings.showDaysToFull || settings.showDaysToNew
+    // When text is enabled, reserve a fixed text column to the right of the
+    // moon so abbreviated labels (1/4, WaCr, 35%, F+10d, ...) fit even on a
+    // square 1x1 cell. The moon then sizes to whichever of (available height,
+    // available width minus that text column) is smallest, scaled by the
+    // user's diameter setting.
+    val textColumnWidth = if (hasAnyText) 38.dp else 0.dp
+    val widthForMoon = (size.width - textColumnWidth).coerceAtLeast(0.dp)
+    val moonBox = if (widthForMoon < size.height) widthForMoon else size.height
+    val moonDiameter = moonBox * (diameterPct / 100f)
+    val edgeTouch = diameterPct >= 100 && !hasAnyText
     val effectiveIconPadding = if (edgeTouch) 0.dp else iconPadding
     val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
     val strokePx = if (compact) lineStroke * 1.8f else lineStroke * 2.2f
@@ -50,13 +59,6 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             strokePx = strokePx,
         )
     }
-
-    val hasAnyText = settings.showPhaseName || settings.showIllumination ||
-        settings.showDaysToFull || settings.showDaysToNew
-    // Only reserve room for text if the widget is meaningfully wider than tall
-    // AND something will actually be shown. Otherwise the moon takes the full
-    // available space without text overlapping its outline.
-    val hasTextRoom = hasAnyText && size.width > size.height + 24.dp
 
     Box(
         modifier = GlanceModifier
@@ -83,11 +85,11 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 )
             }
 
-            if (hasTextRoom) {
+            if (hasAnyText) {
                 Column(
                     modifier = GlanceModifier
                         .fillMaxHeight()
-                        .padding(start = 8.dp, end = 8.dp),
+                        .padding(start = 4.dp, end = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (settings.showPhaseName) {
@@ -95,7 +97,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                             text = state.phase.shortName,
                             style = TextStyle(
                                 color = lineColor,
-                                fontSize = if (compact) 11.sp else 13.sp,
+                                fontSize = if (compact) 10.sp else 12.sp,
                                 fontWeight = FontWeight.Medium,
                             ),
                         )
@@ -105,7 +107,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                             text = "${state.illuminationPct}%",
                             style = TextStyle(
                                 color = ColorProvider(Color(0xFFAEB9CC)),
-                                fontSize = if (compact) 10.sp else 11.sp,
+                                fontSize = if (compact) 9.sp else 11.sp,
                             ),
                         )
                     }
