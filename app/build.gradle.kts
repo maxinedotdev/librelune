@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+import java.util.Properties
+
 android {
     namespace = "dev.maxine.librelune"
     compileSdk = 36
@@ -18,18 +20,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    val releaseStoreFile = providers.gradleProperty("LIBRELUNE_RELEASE_STORE_FILE")
-        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_STORE_FILE"))
-        .orNull
-    val releaseStorePassword = providers.gradleProperty("LIBRELUNE_RELEASE_STORE_PASSWORD")
-        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_STORE_PASSWORD"))
-        .orNull
-    val releaseKeyAlias = providers.gradleProperty("LIBRELUNE_RELEASE_KEY_ALIAS")
-        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_KEY_ALIAS"))
-        .orNull
-    val releaseKeyPassword = providers.gradleProperty("LIBRELUNE_RELEASE_KEY_PASSWORD")
-        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_KEY_PASSWORD"))
-        .orNull
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+    }
+
+    fun signingValue(key: String): String? {
+        val fromFile = keystoreProperties.getProperty(key)
+        if (!fromFile.isNullOrBlank()) return fromFile
+        val fromGradle = providers.gradleProperty(key).orNull
+        if (!fromGradle.isNullOrBlank()) return fromGradle
+        return providers.environmentVariable(key).orNull
+    }
+
+    val releaseStoreFile = signingValue("LIBRELUNE_RELEASE_STORE_FILE")
+    val releaseStorePassword = signingValue("LIBRELUNE_RELEASE_STORE_PASSWORD")
+    val releaseKeyAlias = signingValue("LIBRELUNE_RELEASE_KEY_ALIAS")
+    val releaseKeyPassword = signingValue("LIBRELUNE_RELEASE_KEY_PASSWORD")
 
     val hasReleaseSigning = !releaseStoreFile.isNullOrBlank() &&
         !releaseStorePassword.isNullOrBlank() &&
