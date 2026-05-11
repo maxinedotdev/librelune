@@ -47,7 +47,7 @@ jobs:
                   sarif_file: reports/dependency-check-report.sarif
 
             - name: Upload Dependency-Check artifacts
-              uses: actions/upload-artifact@v8
+              uses: actions/upload-artifact@v7
               with:
                   name: dependency-check-report
                   path: reports
