@@ -8,3 +8,6 @@ build/
 
 # Local Android SDK configuration
 local.properties
+
+# System artefacts
+.DS_Store
