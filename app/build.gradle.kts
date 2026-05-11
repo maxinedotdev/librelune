@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "dev.maxine.librelune"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.maxine.librelune"
@@ -67,6 +67,12 @@ android {
 
     buildFeatures {
         compose = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
