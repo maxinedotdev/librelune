@@ -62,9 +62,11 @@ class MoonCalculator(
 
             // Observer-facing orientation of the bright limb (zenith angle):
             // MoonIllumination.angle - MoonPosition.parallacticAngle
+            // suncalc expresses this angle as anticlockwise-positive, while
+            // Android Canvas rotation is clockwise-positive, so invert sign.
             // Clamp to a libration-style nod range so the moon never rotates
             // far enough to flip a quarter into a "bowl" shape.
-            val raw = (topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
+            val raw = -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
             raw.coerceIn(-25f, 25f)
         } else {
             0f
