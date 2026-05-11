@@ -1,4 +1,7 @@
 .vscode/
+.github/*
+!.github/workflows/
+!.github/workflows/**
 
 # Gradle and build artifacts
 .gradle/
