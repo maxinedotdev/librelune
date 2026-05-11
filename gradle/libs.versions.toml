@@ -8,7 +8,7 @@ compose-ui-tooling-preview = "1.11.1"
 glance = "1.1.1"
 datastore = "1.2.1"
 work = "2.11.2"
-startup = "1.1.1"
+startup = "1.2.0"
 commons-suncalc = "3.11"
 
 [libraries]
