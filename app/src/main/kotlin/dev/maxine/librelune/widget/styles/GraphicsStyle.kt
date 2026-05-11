@@ -47,10 +47,11 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     val diameterPct = settings.moonDiameterPct.coerceIn(40, 100)
     val minDimension = if (size.width < size.height) size.width else size.height
     val moonDiameter = minDimension * (diameterPct / 100f)
-    val effectiveIconPadding = if (diameterPct >= 100) 0.dp else iconPadding
+    val paddedDiameter = moonDiameter - (iconPadding * 2)
+    val moonImageDiameter = if (paddedDiameter > 0.dp) paddedDiameter else 1.dp
     val density = context.resources.displayMetrics.density
     // Keep payload conservative for RemoteViews transport while preserving quality.
-    val moonBitmapSizePx = ((moonDiameter.value * density).roundToInt())
+    val moonBitmapSizePx = ((moonImageDiameter.value * density).roundToInt())
         .coerceIn(128, 260)
 
     val renderPhase = MoonRenderPhase.fromState(state)
@@ -71,7 +72,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
         Hemisphere.SOUTHERN -> normalized >= 0.5
     }
     val illumination = (state.illuminationPct.coerceIn(0, 100) / 100f)
-    val moonRadius = moonDiameter / 2
+    val moonRadius = moonImageDiameter / 2
     val sideSign = if (litRight) 1f else -1f
     val curveApexOffset = moonRadius * (0.5f * (1f - 2f * illumination)) * sideSign
     val wobbleCos = cos(Math.toRadians(state.wobbleDeg.toDouble())).toFloat()
@@ -93,8 +94,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
             contentDescription = state.phase.displayName,
             contentScale = ContentScale.Fit,
             modifier = GlanceModifier
-                .size(moonDiameter)
-                .padding(effectiveIconPadding),
+                .size(moonImageDiameter),
         )
 
         if (hasAnyText && darkRegionWidth > 0.dp) {
