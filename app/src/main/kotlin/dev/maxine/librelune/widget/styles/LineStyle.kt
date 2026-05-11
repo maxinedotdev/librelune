@@ -15,6 +15,8 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
+import androidx.glance.layout.Row
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
@@ -49,6 +51,13 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
         )
     }
 
+    val hasAnyText = settings.showPhaseName || settings.showIllumination ||
+        settings.showDaysToFull || settings.showDaysToNew
+    // Only reserve room for text if the widget is meaningfully wider than tall
+    // AND something will actually be shown. Otherwise the moon takes the full
+    // available space without text overlapping its outline.
+    val hasTextRoom = hasAnyText && size.width > size.height + 24.dp
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -56,62 +65,70 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             .clickable(clickAction),
         contentAlignment = Alignment.Center,
     ) {
-        Image(
-            provider = ImageProvider(moonBitmap),
-            contentDescription = state.phase.displayName,
-            contentScale = ContentScale.Fit,
-            modifier = GlanceModifier
-                .size(moonDiameter)
-                .padding(effectiveIconPadding),
-        )
-
-        // Overlay text in the bottom-left corner so it sits within the
-        // available widget space rather than stealing height from the moon.
-        Box(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .padding(bottom = 6.dp, start = 6.dp),
-            contentAlignment = Alignment.BottomStart,
+        Row(
+            modifier = GlanceModifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
-                if (settings.showPhaseName) {
-                    Text(
-                        text = state.phase.displayName,
-                        style = TextStyle(
-                            color = lineColor,
-                            fontSize = if (compact) 9.sp else 11.sp,
-                            fontWeight = FontWeight.Medium,
-                        ),
-                    )
-                }
-                if (settings.showIllumination) {
-                    Text(
-                        text = "${state.illuminationPct}%",
-                        style = TextStyle(
-                            color = ColorProvider(Color(0xFFAEB9CC)),
-                            fontSize = if (compact) 9.sp else 10.sp,
-                        ),
-                    )
-                }
-                if (settings.showDaysToFull) {
-                    val days = state.daysToFull.toInt()
-                    Text(
-                        text = if (compact) "F+${days}d" else "Full in ${days}d",
-                        style = TextStyle(
-                            color = ColorProvider(Color(0xFF8D99AE)),
-                            fontSize = 9.sp,
-                        ),
-                    )
-                }
-                if (settings.showDaysToNew) {
-                    val days = state.daysToNew.toInt()
-                    Text(
-                        text = if (compact) "N+${days}d" else "New in ${days}d",
-                        style = TextStyle(
-                            color = ColorProvider(Color(0xFF8D99AE)),
-                            fontSize = 9.sp,
-                        ),
-                    )
+            Box(
+                modifier = GlanceModifier
+                    .size(moonDiameter)
+                    .padding(effectiveIconPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    provider = ImageProvider(moonBitmap),
+                    contentDescription = state.phase.displayName,
+                    contentScale = ContentScale.Fit,
+                    modifier = GlanceModifier.fillMaxSize(),
+                )
+            }
+
+            if (hasTextRoom) {
+                Column(
+                    modifier = GlanceModifier
+                        .fillMaxHeight()
+                        .padding(start = 8.dp, end = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (settings.showPhaseName) {
+                        Text(
+                            text = state.phase.shortName,
+                            style = TextStyle(
+                                color = lineColor,
+                                fontSize = if (compact) 11.sp else 13.sp,
+                                fontWeight = FontWeight.Medium,
+                            ),
+                        )
+                    }
+                    if (settings.showIllumination) {
+                        Text(
+                            text = "${state.illuminationPct}%",
+                            style = TextStyle(
+                                color = ColorProvider(Color(0xFFAEB9CC)),
+                                fontSize = if (compact) 10.sp else 11.sp,
+                            ),
+                        )
+                    }
+                    if (settings.showDaysToFull) {
+                        val days = state.daysToFull.toInt()
+                        Text(
+                            text = "F+${days}d",
+                            style = TextStyle(
+                                color = ColorProvider(Color(0xFF8D99AE)),
+                                fontSize = if (compact) 9.sp else 10.sp,
+                            ),
+                        )
+                    }
+                    if (settings.showDaysToNew) {
+                        val days = state.daysToNew.toInt()
+                        Text(
+                            text = "N+${days}d",
+                            style = TextStyle(
+                                color = ColorProvider(Color(0xFF8D99AE)),
+                                fontSize = if (compact) 9.sp else 10.sp,
+                            ),
+                        )
+                    }
                 }
             }
         }

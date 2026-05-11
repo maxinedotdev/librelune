@@ -58,17 +58,19 @@ object MoonLineBitmapFactory {
         val xOffset = radius * (1.0 - (2.0 * illumination)).toFloat()
         val ctrlX = if (litRight) cx + xOffset else cx - xOffset
 
-        // Android arc angles: 0deg = 3 o'clock, 90 = 6, 180 = 9, 270 = 12.
-        // After drawing the terminator from top -> bottom, the arc must
-        // travel along the lit side back up to the top.
-        val arcStart = if (litRight) 90f else 270f
-        val arcSweep = -180f
+        // After the terminator the current point is at the BOTTOM of the
+        // moon, so the arc must also start at the bottom (90deg) and sweep
+        // along the lit side back to the top. Sweep direction picks the side:
+        //   litRight -> sweep -180 (bottom -> right -> top)
+        //   litLeft  -> sweep +180 (bottom -> left  -> top)
+        // Using forceMoveTo=false with a matching start point avoids an
+        // implicit straight line being added before the arc.
+        val arcSweep = if (litRight) -180f else 180f
 
         val path = Path().apply {
             moveTo(cx, cy - radius)
             quadTo(ctrlX, cy, cx, cy + radius)
-            arcTo(circle, arcStart, arcSweep, false)
-            close()
+            arcTo(circle, 90f, arcSweep, false)
         }
         canvas.drawPath(path, paint)
 
