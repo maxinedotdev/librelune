@@ -67,17 +67,38 @@ jobs:
                   path: app/build/outputs/apk/release/app-release.apk
                   if-no-files-found: error
 
+    check-fdroid-secrets:
+        name: Check F-Droid Secrets
+        runs-on: ubuntu-latest
+        needs: build-release
+        outputs:
+            ready: ${{ steps.check.outputs.ready }}
+        steps:
+            - id: check
+              shell: bash
+              env:
+                  FDROID_KEYSTORE_B64: ${{ secrets.FDROID_KEYSTORE_B64 }}
+                  FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
+                  FDROID_KEY_ALIAS: ${{ secrets.FDROID_KEY_ALIAS }}
+                  FDROID_KEY_PASSWORD: ${{ secrets.FDROID_KEY_PASSWORD }}
+                  FDROID_REPO_URL: ${{ secrets.FDROID_REPO_URL }}
+              run: |
+                  if [[ -n "$FDROID_KEYSTORE_B64" && \
+                        -n "$FDROID_KEYSTORE_PASSWORD" && \
+                        -n "$FDROID_KEY_ALIAS" && \
+                        -n "$FDROID_KEY_PASSWORD" && \
+                        -n "$FDROID_REPO_URL" ]]; then
+                      echo "ready=true" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "ready=false" >> "$GITHUB_OUTPUT"
+                      echo "::notice::F-Droid secrets not configured — skipping publish."
+                  fi
+
     publish-fdroid:
         name: Publish F-Droid Repo
         runs-on: ubuntu-latest
-        needs: build-release
-        if: ${{
-            secrets.FDROID_KEYSTORE_B64 != '' &&
-            secrets.FDROID_KEYSTORE_PASSWORD != '' &&
-            secrets.FDROID_KEY_ALIAS != '' &&
-            secrets.FDROID_KEY_PASSWORD != '' &&
-            secrets.FDROID_REPO_URL != ''
-            }}
+        needs: [build-release, check-fdroid-secrets]
+        if: needs.check-fdroid-secrets.outputs.ready == 'true'
 
         steps:
             - name: Checkout
