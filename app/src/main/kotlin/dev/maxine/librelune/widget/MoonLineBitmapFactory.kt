@@ -21,6 +21,8 @@ object MoonLineBitmapFactory {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
             strokeWidth = strokePx
+            strokeJoin = Paint.Join.ROUND
+            strokeCap = Paint.Cap.ROUND
             color = 0xFFE8EEF9.toInt()
         }
 
@@ -37,11 +39,6 @@ object MoonLineBitmapFactory {
             return bitmap
         }
 
-        val litRight = when (hemisphere) {
-            Hemisphere.NORTHERN -> normalized < 0.5
-            Hemisphere.SOUTHERN -> normalized >= 0.5
-        }
-
         val circle = RectF(cx - radius, cy - radius, cx + radius, cy + radius)
 
         if (illumination >= 0.999) {
@@ -49,20 +46,31 @@ object MoonLineBitmapFactory {
             return bitmap
         }
 
-        if (litRight) {
-            canvas.drawArc(circle, -90f, 180f, false, paint)
-        } else {
-            canvas.drawArc(circle, 90f, 180f, false, paint)
+        val litRight = when (hemisphere) {
+            Hemisphere.NORTHERN -> normalized < 0.5
+            Hemisphere.SOUTHERN -> normalized >= 0.5
         }
 
+        // Build the lit-side outline as ONE continuous closed path so the
+        // terminator curve and the half-circle arc share real path joins
+        // (round join) instead of butting two stroke caps together, which
+        // previously produced a visible seam at top/bottom.
         val xOffset = radius * (1.0 - (2.0 * illumination)).toFloat()
         val ctrlX = if (litRight) cx + xOffset else cx - xOffset
 
-        val terminator = Path().apply {
+        // Android arc angles: 0deg = 3 o'clock, 90 = 6, 180 = 9, 270 = 12.
+        // After drawing the terminator from top -> bottom, the arc must
+        // travel along the lit side back up to the top.
+        val arcStart = if (litRight) 90f else 270f
+        val arcSweep = -180f
+
+        val path = Path().apply {
             moveTo(cx, cy - radius)
             quadTo(ctrlX, cy, cx, cy + radius)
+            arcTo(circle, arcStart, arcSweep, false)
+            close()
         }
-        canvas.drawPath(terminator, paint)
+        canvas.drawPath(path, paint)
 
         return bitmap
     }
