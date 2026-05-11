@@ -23,6 +23,7 @@ class WidgetSettingsRepo(private val context: Context) {
     private fun hemisphereKey(id: Int) = stringPreferencesKey("widget_${id}_hemisphere")
     private fun iconPaddingKey(id: Int) = stringPreferencesKey("widget_${id}_icon_padding_dp")
     private fun lineStrokeKey(id: Int) = stringPreferencesKey("widget_${id}_line_stroke_dp")
+    private fun moonDiameterKey(id: Int) = stringPreferencesKey("widget_${id}_moon_diameter_pct")
 
     fun flow(appWidgetId: Int): Flow<WidgetSettings> =
         context.dataStore.data.map { prefs -> prefs.toSettings(appWidgetId) }
@@ -40,6 +41,7 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs[hemisphereKey(appWidgetId)] = settings.hemisphere.name
             prefs[iconPaddingKey(appWidgetId)] = settings.iconPaddingDp.toString()
             prefs[lineStrokeKey(appWidgetId)] = settings.lineStrokeDp.toString()
+            prefs[moonDiameterKey(appWidgetId)] = settings.moonDiameterPct.toString()
         }
     }
 
@@ -53,6 +55,7 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs.remove(hemisphereKey(appWidgetId))
             prefs.remove(iconPaddingKey(appWidgetId))
             prefs.remove(lineStrokeKey(appWidgetId))
+            prefs.remove(moonDiameterKey(appWidgetId))
         }
     }
 
@@ -69,5 +72,7 @@ class WidgetSettingsRepo(private val context: Context) {
             ?: WidgetSettings().iconPaddingDp,
         lineStrokeDp = this[lineStrokeKey(id)]?.toIntOrNull()?.coerceIn(1, 8)
             ?: WidgetSettings().lineStrokeDp,
+        moonDiameterPct = this[moonDiameterKey(id)]?.toIntOrNull()?.coerceIn(40, 100)
+            ?: WidgetSettings().moonDiameterPct,
     )
 }

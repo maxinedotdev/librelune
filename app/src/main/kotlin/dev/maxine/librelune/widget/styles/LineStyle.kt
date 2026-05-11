@@ -36,13 +36,16 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val lineColor = ColorProvider(Color(0xFFE8EEF9))
     val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
     val lineStroke = settings.lineStrokeDp.coerceIn(1, 8).toFloat()
+    val minDimension = if (size.width < size.height) size.width else size.height
+    val moonDiameter = minDimension * (settings.moonDiameterPct.coerceIn(40, 100) / 100f)
     val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
-    val moonBitmap = remember(phaseFraction, settings.hemisphere) {
+    val strokePx = if (compact) lineStroke * 1.8f else lineStroke * 2.2f
+    val moonBitmap = remember(phaseFraction, settings.hemisphere, strokePx, compact) {
         MoonLineBitmapFactory.render(
             phaseFraction = phaseFraction,
             hemisphere = settings.hemisphere,
             sizePx = if (compact) 360 else 420,
-            strokePx = lineStroke,
+            strokePx = strokePx,
         )
     }
 
@@ -62,7 +65,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 provider = ImageProvider(moonBitmap),
                 contentDescription = state.phase.displayName,
                 modifier = GlanceModifier
-                    .width(if (compact) 74.dp else 84.dp)
+                    .width(moonDiameter)
                     .padding(iconPadding),
             )
             if (settings.showPhaseName) {

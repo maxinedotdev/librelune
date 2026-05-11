@@ -16,6 +16,7 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
@@ -30,6 +31,8 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     val compact = size.width <= 120.dp || size.height <= 120.dp
     val renderPhase = MoonRenderPhase.fromState(state)
     val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
+    val minDimension = if (size.width < size.height) size.width else size.height
+    val moonDiameter = minDimension * (settings.moonDiameterPct.coerceIn(40, 100) / 100f)
 
     Box(
         modifier = GlanceModifier
@@ -42,7 +45,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
             provider = ImageProvider(MoonGlyph.drawableRes(renderPhase, settings.hemisphere)),
             contentDescription = state.phase.displayName,
             modifier = GlanceModifier
-                .fillMaxSize()
+                .size(moonDiameter)
                 .padding(iconPadding),
         )
 

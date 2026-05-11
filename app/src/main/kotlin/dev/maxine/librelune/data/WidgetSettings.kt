@@ -12,4 +12,5 @@ data class WidgetSettings(
     val hemisphere: Hemisphere = Hemisphere.NORTHERN,
     val iconPaddingDp: Int = 6,
     val lineStrokeDp: Int = 2,
+    val moonDiameterPct: Int = 82,
 )

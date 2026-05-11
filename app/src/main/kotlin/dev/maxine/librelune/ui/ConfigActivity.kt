@@ -109,6 +109,7 @@ private fun ConfigScreen(
     var hemisphere by remember { mutableStateOf(defaults.hemisphere) }
     var iconPaddingDp by remember { mutableStateOf(defaults.iconPaddingDp.toFloat()) }
     var lineStrokeDp by remember { mutableStateOf(defaults.lineStrokeDp.toFloat()) }
+    var moonDiameterPct by remember { mutableStateOf(defaults.moonDiameterPct.toFloat()) }
 
     LaunchedEffect(appWidgetId) {
         val saved = repo.read(appWidgetId)
@@ -120,6 +121,7 @@ private fun ConfigScreen(
         hemisphere = saved.hemisphere
         iconPaddingDp = saved.iconPaddingDp.toFloat()
         lineStrokeDp = saved.lineStrokeDp.toFloat()
+        moonDiameterPct = saved.moonDiameterPct.toFloat()
     }
 
     Scaffold(
@@ -183,6 +185,21 @@ private fun ConfigScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            Text("Moon diameter", style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = "${moonDiameterPct.toInt()} %",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.End,
+            )
+            Slider(
+                value = moonDiameterPct,
+                onValueChange = { moonDiameterPct = it.coerceIn(40f, 100f) },
+                valueRange = 40f..100f,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
             if (style == WidgetStyle.LINE) {
                 Text("Line thickness", style = MaterialTheme.typography.labelLarge)
                 Text(
@@ -218,6 +235,7 @@ private fun ConfigScreen(
                             hemisphere = hemisphere,
                             iconPaddingDp = iconPaddingDp.toInt().coerceIn(0, 24),
                             lineStrokeDp = lineStrokeDp.toInt().coerceIn(1, 8),
+                            moonDiameterPct = moonDiameterPct.toInt().coerceIn(40, 100),
                         )
                     )
                 }) { Text("Save") }
