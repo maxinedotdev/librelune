@@ -27,6 +27,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,6 +71,8 @@ class ConfigActivity : ComponentActivity() {
             LibreluneTheme {
                 val scope = rememberCoroutineScope()
                 ConfigScreen(
+                    appWidgetId = appWidgetId,
+                    repo = repo,
                     onSave = { settings ->
                         scope.launch {
                             repo.write(appWidgetId, settings)
@@ -90,6 +93,8 @@ class ConfigActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ConfigScreen(
+    appWidgetId: Int,
+    repo: WidgetSettingsRepo,
     onSave: (WidgetSettings) -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -100,6 +105,16 @@ private fun ConfigScreen(
     var showDaysToFull by remember { mutableStateOf(defaults.showDaysToFull) }
     var showDaysToNew by remember { mutableStateOf(defaults.showDaysToNew) }
     var hemisphere by remember { mutableStateOf(defaults.hemisphere) }
+
+    LaunchedEffect(appWidgetId) {
+        val saved = repo.read(appWidgetId)
+        style = saved.style
+        showPhaseName = saved.showPhaseName
+        showIllumination = saved.showIllumination
+        showDaysToFull = saved.showDaysToFull
+        showDaysToNew = saved.showDaysToNew
+        hemisphere = saved.hemisphere
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Configure Widget") }) },
