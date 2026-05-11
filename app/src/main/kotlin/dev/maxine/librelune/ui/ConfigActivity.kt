@@ -45,7 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -56,8 +58,9 @@ import dev.maxine.librelune.data.WidgetStyle
 import dev.maxine.librelune.moon.MoonPhase
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.ui.theme.LibreluneTheme
-import dev.maxine.librelune.widget.MoonGraphicsBitmapFactory
+import dev.maxine.librelune.widget.MoonGlyph
 import dev.maxine.librelune.widget.MoonLineBitmapFactory
+import dev.maxine.librelune.widget.MoonRenderPhase
 import dev.maxine.librelune.widget.MoonWidget
 import kotlinx.coroutines.launch
 import kotlin.math.PI
@@ -421,16 +424,9 @@ private fun LinePreview(settings: WidgetSettings, state: MoonState) {
 
 @Composable
 private fun GraphicsPreview(settings: WidgetSettings, state: MoonState) {
-    val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
     val wobble = if (settings.wobbleEnabled) state.wobbleDeg else 0f
-    val bitmap = remember(phaseFraction, settings.hemisphere, wobble) {
-        MoonGraphicsBitmapFactory.render(
-            phaseFraction = phaseFraction,
-            hemisphere = settings.hemisphere,
-            sizePx = 420,
-            wobbleDeg = wobble,
-        )
-    }
+    val renderPhase = MoonRenderPhase.fromState(state)
+    val drawableRes = MoonGlyph.drawableRes(renderPhase, settings.hemisphere)
 
     Row(
         modifier = Modifier.fillMaxSize(),
@@ -438,10 +434,11 @@ private fun GraphicsPreview(settings: WidgetSettings, state: MoonState) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Image(
-            bitmap = bitmap.asImageBitmap(),
+            painter = painterResource(id = drawableRes),
             contentDescription = "Graphics moon preview",
             modifier = Modifier
-                .size(92.dp),
+                .size(92.dp)
+                .graphicsLayer { rotationZ = wobble },
             contentScale = ContentScale.Fit,
         )
 

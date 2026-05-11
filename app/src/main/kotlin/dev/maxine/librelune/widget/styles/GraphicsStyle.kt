@@ -3,6 +3,7 @@ package dev.maxine.librelune.widget.styles
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
@@ -29,11 +30,14 @@ import androidx.glance.unit.ColorProvider
 import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
-import dev.maxine.librelune.widget.MoonGraphicsBitmapFactory
+import dev.maxine.librelune.widget.MoonGlyph
+import dev.maxine.librelune.widget.MoonRenderPhase
+import dev.maxine.librelune.widget.MoonRotatedBitmapFactory
 import kotlin.math.cos
 
 @Composable
 fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
+    val context = LocalContext.current
     val size = LocalSize.current
     val compact = size.width <= 120.dp || size.height <= 120.dp
     val hasAnyText = settings.showPhaseName || settings.showIllumination ||
@@ -43,16 +47,24 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     val minDimension = if (size.width < size.height) size.width else size.height
     val moonDiameter = minDimension * (diameterPct / 100f)
     val effectiveIconPadding = if (diameterPct >= 100) 0.dp else iconPadding
-    val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
-    val moonBitmap = remember(phaseFraction, settings.hemisphere, compact, state.wobbleDeg) {
-        MoonGraphicsBitmapFactory.render(
-            phaseFraction = phaseFraction,
-            hemisphere = settings.hemisphere,
-            sizePx = if (compact) 360 else 420,
-            wobbleDeg = state.wobbleDeg,
-        )
+
+    val renderPhase = MoonRenderPhase.fromState(state)
+    val drawableRes = MoonGlyph.drawableRes(renderPhase, settings.hemisphere)
+    val moonProvider = if (state.wobbleDeg == 0f) {
+        ImageProvider(drawableRes)
+    } else {
+        val rotated = remember(drawableRes, state.wobbleDeg, compact) {
+            MoonRotatedBitmapFactory.render(
+                context = context,
+                drawableRes = drawableRes,
+                sizePx = if (compact) 360 else 420,
+                wobbleDeg = state.wobbleDeg,
+            )
+        }
+        ImageProvider(rotated)
     }
 
+    val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
     val normalized = ((phaseFraction % 1.0) + 1.0) % 1.0
     val litRight = when (settings.hemisphere) {
         Hemisphere.NORTHERN -> normalized < 0.5
@@ -78,7 +90,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            provider = ImageProvider(moonBitmap),
+            provider = moonProvider,
             contentDescription = state.phase.displayName,
             contentScale = ContentScale.Fit,
             modifier = GlanceModifier

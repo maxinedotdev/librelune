@@ -3,6 +3,8 @@ package dev.maxine.librelune.moon
 import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlin.math.PI
+import kotlin.math.acos
 import kotlin.math.roundToInt
 import org.shredzone.commons.suncalc.MoonIllumination
 import org.shredzone.commons.suncalc.MoonPosition
@@ -36,11 +38,16 @@ class MoonCalculator(
             .execute()
             .time
 
-        // commons-suncalc's MoonIllumination.phase is an angle in degrees:
-        // -180 = new moon (start), 0 = full moon, +180 = new moon (end of cycle).
-        // Map it to an age in days within the synodic month [0, 29.530588853].
-        val ageDays = ((illumination.phase + 180.0) / 360.0 * 29.530588853)
-            .coerceIn(0.0, 29.530588853)
+        // Compute synodic age (0..29.53d) from a robust pair:
+        //   - illumination.fraction      : 0..1 illuminated disk fraction
+        //   - sign of illumination.angle : negative => waxing, positive => waning
+        // ageDays = waxingHalf when waxing, else (synodic - waxingHalf).
+        val synodicDays = 29.530588853
+        val fraction = illumination.fraction.coerceIn(0.0, 1.0)
+        val waxingHalfDays = (acos(1.0 - 2.0 * fraction) / PI) * (synodicDays / 2.0)
+        val isWaning = illumination.angle > 0.0
+        val ageDays = (if (isWaning) synodicDays - waxingHalfDays else waxingHalfDays)
+            .coerceIn(0.0, synodicDays)
         val phase = MoonPhase.fromAgeDays(ageDays)
 
         val wobbleDeg = if (wobbleEnabled) {
