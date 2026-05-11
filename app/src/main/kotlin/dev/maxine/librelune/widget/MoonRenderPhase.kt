@@ -5,6 +5,6 @@ import dev.maxine.librelune.moon.MoonState
 
 object MoonRenderPhase {
     fun fromState(state: MoonState): MoonPhase {
-        return MoonPhase.fromAgeDays(state.ageDays)
+        return state.phase
     }
 }

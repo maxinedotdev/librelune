@@ -33,6 +33,7 @@ import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.widget.MoonGlyph
 import dev.maxine.librelune.widget.MoonRenderPhase
 import dev.maxine.librelune.widget.MoonRotatedBitmapFactory
+import kotlin.math.roundToInt
 import kotlin.math.cos
 
 @Composable
@@ -47,14 +48,18 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     val minDimension = if (size.width < size.height) size.width else size.height
     val moonDiameter = minDimension * (diameterPct / 100f)
     val effectiveIconPadding = if (diameterPct >= 100) 0.dp else iconPadding
+    val density = context.resources.displayMetrics.density
+    // Keep payload conservative for RemoteViews transport while preserving quality.
+    val moonBitmapSizePx = ((moonDiameter.value * density).roundToInt())
+        .coerceIn(128, 260)
 
     val renderPhase = MoonRenderPhase.fromState(state)
     val drawableRes = MoonGlyph.drawableRes(renderPhase, settings.hemisphere)
-    val moonBitmap = remember(drawableRes, state.wobbleDeg, compact) {
+    val moonBitmap = remember(drawableRes, state.wobbleDeg, moonBitmapSizePx) {
         MoonRotatedBitmapFactory.render(
             context = context,
             drawableRes = drawableRes,
-            sizePx = if (compact) 360 else 420,
+            sizePx = moonBitmapSizePx,
             wobbleDeg = state.wobbleDeg,
         )
     }

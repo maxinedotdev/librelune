@@ -48,7 +48,10 @@ class MoonCalculator(
         val isWaning = illumination.angle > 0.0
         val ageDays = (if (isWaning) synodicDays - waxingHalfDays else waxingHalfDays)
             .coerceIn(0.0, synodicDays)
-        val phase = MoonPhase.fromAgeDays(ageDays)
+        val phase = MoonPhase.fromIllumination(
+            fraction = illumination.fraction,
+            angleDeg = illumination.angle,
+        )
 
         val wobbleDeg = if (wobbleEnabled) {
             val topoIllumination = MoonIllumination.compute()
