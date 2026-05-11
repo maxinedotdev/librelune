@@ -5,9 +5,13 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.math.roundToInt
 import org.shredzone.commons.suncalc.MoonIllumination
+import org.shredzone.commons.suncalc.MoonPosition
 
 class MoonCalculator(
     private val zoneId: ZoneId = ZoneId.systemDefault(),
+    private val wobbleEnabled: Boolean = false,
+    private val latitudeDeg: Double = 0.0,
+    private val longitudeDeg: Double = 0.0,
 ) {
     fun now(now: ZonedDateTime = ZonedDateTime.now(zoneId)): MoonState {
         val illumination = MoonIllumination.compute()
@@ -34,12 +38,24 @@ class MoonCalculator(
         val ageDays = ((illumination.phase + 180.0) / 360.0 * 29.530588853)
             .coerceIn(0.0, 29.530588853)
 
+        val wobbleDeg = if (wobbleEnabled) {
+            MoonPosition.compute()
+                .on(now)
+                .at(latitudeDeg.coerceIn(-90.0, 90.0), longitudeDeg.coerceIn(-180.0, 180.0))
+                .execute()
+                .parallacticAngle
+                .toFloat()
+        } else {
+            0f
+        }
+
         return MoonState(
             phase = phase,
             illuminationPct = (illumination.fraction * 100.0).roundToInt().coerceIn(0, 100),
             ageDays = ageDays,
             daysToFull = Duration.between(now, nextFull).toHours().toDouble() / 24.0,
             daysToNew = Duration.between(now, nextNew).toHours().toDouble() / 24.0,
+            wobbleDeg = wobbleDeg,
         )
     }
 }
@@ -50,4 +66,5 @@ data class MoonState(
     val ageDays: Double,
     val daysToFull: Double,
     val daysToNew: Double,
+    val wobbleDeg: Float = 0f,
 )

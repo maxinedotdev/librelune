@@ -24,6 +24,9 @@ class WidgetSettingsRepo(private val context: Context) {
     private fun iconPaddingKey(id: Int) = stringPreferencesKey("widget_${id}_icon_padding_dp")
     private fun lineStrokeKey(id: Int) = stringPreferencesKey("widget_${id}_line_stroke_dp")
     private fun moonDiameterKey(id: Int) = stringPreferencesKey("widget_${id}_moon_diameter_pct")
+    private fun wobbleEnabledKey(id: Int) = booleanPreferencesKey("widget_${id}_wobble_enabled")
+    private fun latitudeKey(id: Int) = stringPreferencesKey("widget_${id}_latitude_deg")
+    private fun longitudeKey(id: Int) = stringPreferencesKey("widget_${id}_longitude_deg")
 
     fun flow(appWidgetId: Int): Flow<WidgetSettings> =
         context.dataStore.data.map { prefs -> prefs.toSettings(appWidgetId) }
@@ -42,6 +45,9 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs[iconPaddingKey(appWidgetId)] = settings.iconPaddingDp.toString()
             prefs[lineStrokeKey(appWidgetId)] = settings.lineStrokeDp.toString()
             prefs[moonDiameterKey(appWidgetId)] = settings.moonDiameterPct.toString()
+            prefs[wobbleEnabledKey(appWidgetId)] = settings.wobbleEnabled
+            prefs[latitudeKey(appWidgetId)] = settings.latitudeDeg.toString()
+            prefs[longitudeKey(appWidgetId)] = settings.longitudeDeg.toString()
         }
     }
 
@@ -56,6 +62,9 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs.remove(iconPaddingKey(appWidgetId))
             prefs.remove(lineStrokeKey(appWidgetId))
             prefs.remove(moonDiameterKey(appWidgetId))
+            prefs.remove(wobbleEnabledKey(appWidgetId))
+            prefs.remove(latitudeKey(appWidgetId))
+            prefs.remove(longitudeKey(appWidgetId))
         }
     }
 
@@ -74,5 +83,10 @@ class WidgetSettingsRepo(private val context: Context) {
             ?: WidgetSettings().lineStrokeDp,
         moonDiameterPct = this[moonDiameterKey(id)]?.toIntOrNull()?.coerceIn(40, 100)
             ?: WidgetSettings().moonDiameterPct,
+        wobbleEnabled = this[wobbleEnabledKey(id)] ?: WidgetSettings().wobbleEnabled,
+        latitudeDeg = this[latitudeKey(id)]?.toDoubleOrNull()?.coerceIn(-90.0, 90.0)
+            ?: WidgetSettings().latitudeDeg,
+        longitudeDeg = this[longitudeKey(id)]?.toDoubleOrNull()?.coerceIn(-180.0, 180.0)
+            ?: WidgetSettings().longitudeDeg,
     )
 }

@@ -13,4 +13,7 @@ data class WidgetSettings(
     val iconPaddingDp: Int = 6,
     val lineStrokeDp: Int = 2,
     val moonDiameterPct: Int = 82,
+    val wobbleEnabled: Boolean = false,
+    val latitudeDeg: Double = 0.0,
+    val longitudeDeg: Double = 0.0,
 )

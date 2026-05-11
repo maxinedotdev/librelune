@@ -31,7 +31,11 @@ class MoonWidget : GlanceAppWidget() {
 
         provideContent {
             val settings by repo.flow(appWidgetId).collectAsState(initial = WidgetSettings())
-            val state = MoonCalculator().now()
+            val state = MoonCalculator(
+                wobbleEnabled = settings.wobbleEnabled,
+                latitudeDeg = settings.latitudeDeg,
+                longitudeDeg = settings.longitudeDeg,
+            ).now()
 
             val clickAction = actionStartActivity(
                 Intent(context, MainActivity::class.java).apply {

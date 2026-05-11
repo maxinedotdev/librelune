@@ -14,6 +14,7 @@ object MoonLineBitmapFactory {
         hemisphere: Hemisphere,
         sizePx: Int,
         strokePx: Float,
+        wobbleDeg: Float = 0f,
     ): Bitmap {
         val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -72,7 +73,14 @@ object MoonLineBitmapFactory {
             quadTo(ctrlX, cy, cx, cy + radius)
             arcTo(circle, 90f, arcSweep, false)
         }
-        canvas.drawPath(path, paint)
+        if (wobbleDeg != 0f) {
+            canvas.save()
+            canvas.rotate(wobbleDeg, cx, cy)
+            canvas.drawPath(path, paint)
+            canvas.restore()
+        } else {
+            canvas.drawPath(path, paint)
+        }
 
         return bitmap
     }

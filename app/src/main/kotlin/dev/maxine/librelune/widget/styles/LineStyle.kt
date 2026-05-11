@@ -51,12 +51,13 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
 
     val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
     val strokePx = if (compact) lineStroke * 1.8f else lineStroke * 2.2f
-    val moonBitmap = remember(phaseFraction, settings.hemisphere, strokePx, compact) {
+    val moonBitmap = remember(phaseFraction, settings.hemisphere, strokePx, compact, state.wobbleDeg) {
         MoonLineBitmapFactory.render(
             phaseFraction = phaseFraction,
             hemisphere = settings.hemisphere,
             sizePx = if (compact) 360 else 420,
             strokePx = strokePx,
+            wobbleDeg = state.wobbleDeg,
         )
     }
 
