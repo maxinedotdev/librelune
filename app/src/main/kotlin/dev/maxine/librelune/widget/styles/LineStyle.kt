@@ -30,11 +30,12 @@ import dev.maxine.librelune.moon.MoonState
 fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val size = LocalSize.current
     val compact = size.width <= 120.dp || size.height <= 120.dp
+    val lineColor = ColorProvider(Color(0xFFE8EEF9))
 
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(Color(0xFF0B1220)))
+            .background(ColorProvider(Color(0xFF101521)))
             .cornerRadius(16.dp)
             .padding(if (compact) 6.dp else 8.dp)
             .clickable(clickAction),
@@ -43,19 +44,26 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                text = lineGlyph(state.phase),
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = if (compact) 34.sp else 46.sp,
-                ),
-            )
+            Box(
+                modifier = GlanceModifier
+                    .cornerRadius(999.dp)
+                    .padding(if (compact) 3.dp else 4.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = lineGlyph(state.phase),
+                    style = TextStyle(
+                        color = lineColor,
+                        fontSize = if (compact) 36.sp else 48.sp,
+                    ),
+                )
+            }
             if (!compact && settings.showPhaseName) {
                 Spacer(GlanceModifier.height(4.dp))
                 Text(
                     text = state.phase.displayName,
                     style = TextStyle(
-                        color = ColorProvider(Color.White),
+                        color = lineColor,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                     ),
@@ -65,7 +73,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 Text(
                     text = "${state.illuminationPct}%",
                     style = TextStyle(
-                        color = ColorProvider(Color.White.copy(alpha = 0.7f)),
+                        color = ColorProvider(Color(0xFFAEB9CC)),
                         fontSize = 10.sp,
                     ),
                 )
@@ -75,7 +83,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 Text(
                     text = "Full in ${days}d",
                     style = TextStyle(
-                        color = ColorProvider(Color.White.copy(alpha = 0.6f)),
+                        color = ColorProvider(Color(0xFF8D99AE)),
                         fontSize = 9.sp,
                     ),
                 )
@@ -85,7 +93,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 Text(
                     text = "New in ${days}d",
                     style = TextStyle(
-                        color = ColorProvider(Color.White.copy(alpha = 0.6f)),
+                        color = ColorProvider(Color(0xFF8D99AE)),
                         fontSize = 9.sp,
                     ),
                 )
@@ -95,12 +103,12 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
 }
 
 private fun lineGlyph(phase: MoonPhase): String = when (phase) {
-    MoonPhase.NEW -> "●"
-    MoonPhase.WAXING_CRESCENT -> "◔"
-    MoonPhase.FIRST_QUARTER -> "◑"
+    MoonPhase.NEW -> "◌"
+    MoonPhase.WAXING_CRESCENT -> "☽"
+    MoonPhase.FIRST_QUARTER -> "◐"
     MoonPhase.WAXING_GIBBOUS -> "◕"
     MoonPhase.FULL -> "○"
     MoonPhase.WANING_GIBBOUS -> "◕"
-    MoonPhase.THIRD_QUARTER -> "◐"
-    MoonPhase.WANING_CRESCENT -> "◔"
+    MoonPhase.THIRD_QUARTER -> "◑"
+    MoonPhase.WANING_CRESCENT -> "☾"
 }

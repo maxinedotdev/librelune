@@ -6,8 +6,6 @@ import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.LocalSize
 import androidx.glance.GlanceTheme
-import androidx.glance.Image
-import androidx.glance.ImageProvider
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.cornerRadius
@@ -24,8 +22,8 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import dev.maxine.librelune.data.WidgetSettings
+import dev.maxine.librelune.moon.MoonPhase
 import dev.maxine.librelune.moon.MoonState
-import dev.maxine.librelune.widget.MoonGlyph
 
 @Composable
 fun Material3Style(state: MoonState, settings: WidgetSettings, clickAction: Action) {
@@ -45,14 +43,17 @@ fun Material3Style(state: MoonState, settings: WidgetSettings, clickAction: Acti
             Box(
                 modifier = GlanceModifier
                     .background(GlanceTheme.colors.secondaryContainer)
-                    .cornerRadius(18.dp)
-                    .padding(if (compact) 6.dp else 8.dp),
+                    .cornerRadius(if (compact) 14.dp else 20.dp)
+                    .padding(if (compact) 6.dp else 10.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Image(
-                    provider = ImageProvider(MoonGlyph.drawableRes(state.phase, settings.hemisphere)),
-                    contentDescription = state.phase.displayName,
-                    modifier = GlanceModifier.size(if (compact) 36.dp else 50.dp),
+                Text(
+                    text = materialGlyph(state.phase),
+                    style = TextStyle(
+                        color = GlanceTheme.colors.onSecondaryContainer,
+                        fontSize = if (compact) 28.sp else 36.sp,
+                        fontWeight = FontWeight.Normal,
+                    ),
                 )
             }
             if (!compact && settings.showPhaseName) {
@@ -104,4 +105,15 @@ fun Material3Style(state: MoonState, settings: WidgetSettings, clickAction: Acti
             }
         }
     }
+}
+
+private fun materialGlyph(phase: MoonPhase): String = when (phase) {
+    MoonPhase.NEW -> "●"
+    MoonPhase.WAXING_CRESCENT -> "◔"
+    MoonPhase.FIRST_QUARTER -> "◐"
+    MoonPhase.WAXING_GIBBOUS -> "◕"
+    MoonPhase.FULL -> "○"
+    MoonPhase.WANING_GIBBOUS -> "◕"
+    MoonPhase.THIRD_QUARTER -> "◑"
+    MoonPhase.WANING_CRESCENT -> "◔"
 }
