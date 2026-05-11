@@ -1,6 +1,7 @@
 package dev.maxine.librelune.widget.styles
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,16 +27,23 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
-import dev.maxine.librelune.widget.MoonLineGlyph
-import dev.maxine.librelune.widget.MoonRenderPhase
+import dev.maxine.librelune.widget.MoonLineBitmapFactory
 
 @Composable
 fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val size = LocalSize.current
     val compact = size.width <= 120.dp || size.height <= 120.dp
     val lineColor = ColorProvider(Color(0xFFE8EEF9))
-    val renderPhase = MoonRenderPhase.fromState(state)
     val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
+    val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
+    val moonBitmap = remember(phaseFraction, settings.hemisphere) {
+        MoonLineBitmapFactory.render(
+            phaseFraction = phaseFraction,
+            hemisphere = settings.hemisphere,
+            sizePx = if (compact) 360 else 420,
+            strokePx = if (compact) 4f else 5f,
+        )
+    }
 
     Box(
         modifier = GlanceModifier
@@ -50,7 +58,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                provider = ImageProvider(MoonLineGlyph.drawableRes(renderPhase, settings.hemisphere)),
+                provider = ImageProvider(moonBitmap),
                 contentDescription = state.phase.displayName,
                 modifier = GlanceModifier
                     .width(if (compact) 74.dp else 84.dp)
@@ -99,3 +107,5 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
         }
     }
 }
+
+private const val SYNODIC_MONTH_DAYS = 29.530588853
