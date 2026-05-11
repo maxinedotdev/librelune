@@ -1,0 +1,12 @@
+Librelune is a privacy-respecting moon phase widget for Android.
+
+It shows the current lunar phase, illumination, age, and a realistic orientation wobble that changes with location.
+
+The widget is designed to be lightweight, offline-capable, and free of tracking.
+
+Features:
+- Accurate moon phase and illumination display
+- Optional realistic wobble/orientation rendering
+- Multiple widget styles
+- No ads, no analytics, no proprietary tracking SDKs
+- Fully open source (AGPL-3.0)

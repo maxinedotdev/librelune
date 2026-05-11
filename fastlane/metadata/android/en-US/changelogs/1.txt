@@ -1,0 +1,5 @@
+Initial public release of Librelune.
+- Moon phase widget with illumination and age
+- Optional realistic wobble rendering
+- Configurable widget styles
+- Open source under AGPL-3.0
