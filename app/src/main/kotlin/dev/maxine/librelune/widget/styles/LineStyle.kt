@@ -15,9 +15,13 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
+import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -26,6 +30,7 @@ import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.widget.MoonLineBitmapFactory
+import kotlin.math.cos
 
 @Composable
 fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
@@ -64,7 +69,20 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
         Hemisphere.NORTHERN -> normalized < 0.5
         Hemisphere.SOUTHERN -> normalized >= 0.5
     }
-    val textAlignment = if (litRight) Alignment.CenterStart else Alignment.CenterEnd
+
+    // Centre the text horizontally within the dark region:
+    // from the widget border on the dark side to the terminator's apex
+    // (the deepest point of the curve, at vertical mid-height). The
+    // quadratic bezier midpoint at t=0.5 is (cx + 0.5*xOffset, cy), with
+    // xOffset = r * (1 - 2*illum). Sign follows the lit side.
+    val illumination = ((1.0 - cos(2.0 * Math.PI * normalized)) * 0.5).toFloat()
+    val moonRadius = moonDiameter / 2
+    val sideSign = if (litRight) 1f else -1f
+    val curveApexOffset = moonRadius * (0.5f * (1f - 2f * illumination)) * sideSign
+    val moonCenterX = size.width / 2
+    val curveApexX = moonCenterX + curveApexOffset
+    val darkRegionWidth = (if (litRight) curveApexX else size.width - curveApexX)
+        .coerceAtLeast(0.dp)
 
     Box(
         modifier = GlanceModifier
@@ -82,53 +100,61 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 .padding(effectiveIconPadding),
         )
 
-        if (hasAnyText) {
-            Box(
-                modifier = GlanceModifier
-                    .fillMaxSize()
-                    .padding(horizontal = 4.dp),
-                contentAlignment = textAlignment,
-            ) {
-                Column {
-                    if (settings.showPhaseName) {
-                        Text(
-                            text = state.phase.shortName,
-                            style = TextStyle(
-                                color = lineColor,
-                                fontSize = if (compact) 10.sp else 12.sp,
-                                fontWeight = FontWeight.Medium,
-                            ),
-                        )
+        if (hasAnyText && darkRegionWidth > 0.dp) {
+            Row(modifier = GlanceModifier.fillMaxSize()) {
+                if (!litRight) {
+                    Spacer(modifier = GlanceModifier.defaultWeight())
+                }
+                Box(
+                    modifier = GlanceModifier
+                        .width(darkRegionWidth)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column {
+                        if (settings.showPhaseName) {
+                            Text(
+                                text = state.phase.shortName,
+                                style = TextStyle(
+                                    color = lineColor,
+                                    fontSize = if (compact) 10.sp else 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                ),
+                            )
+                        }
+                        if (settings.showIllumination) {
+                            Text(
+                                text = "${state.illuminationPct}%",
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFFAEB9CC)),
+                                    fontSize = if (compact) 9.sp else 11.sp,
+                                ),
+                            )
+                        }
+                        if (settings.showDaysToFull) {
+                            val days = state.daysToFull.toInt()
+                            Text(
+                                text = "F+${days}d",
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFF8D99AE)),
+                                    fontSize = if (compact) 9.sp else 10.sp,
+                                ),
+                            )
+                        }
+                        if (settings.showDaysToNew) {
+                            val days = state.daysToNew.toInt()
+                            Text(
+                                text = "N+${days}d",
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFF8D99AE)),
+                                    fontSize = if (compact) 9.sp else 10.sp,
+                                ),
+                            )
+                        }
                     }
-                    if (settings.showIllumination) {
-                        Text(
-                            text = "${state.illuminationPct}%",
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFFAEB9CC)),
-                                fontSize = if (compact) 9.sp else 11.sp,
-                            ),
-                        )
-                    }
-                    if (settings.showDaysToFull) {
-                        val days = state.daysToFull.toInt()
-                        Text(
-                            text = "F+${days}d",
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFF8D99AE)),
-                                fontSize = if (compact) 9.sp else 10.sp,
-                            ),
-                        )
-                    }
-                    if (settings.showDaysToNew) {
-                        val days = state.daysToNew.toInt()
-                        Text(
-                            text = "N+${days}d",
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFF8D99AE)),
-                                fontSize = if (compact) 9.sp else 10.sp,
-                            ),
-                        )
-                    }
+                }
+                if (litRight) {
+                    Spacer(modifier = GlanceModifier.defaultWeight())
                 }
             }
         }
