@@ -31,8 +31,10 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     val compact = size.width <= 120.dp || size.height <= 120.dp
     val renderPhase = MoonRenderPhase.fromState(state)
     val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
+    val diameterPct = settings.moonDiameterPct.coerceIn(40, 100)
     val minDimension = if (size.width < size.height) size.width else size.height
-    val moonDiameter = minDimension * (settings.moonDiameterPct.coerceIn(40, 100) / 100f)
+    val moonDiameter = minDimension * (diameterPct / 100f)
+    val effectiveIconPadding = if (diameterPct >= 100) 0.dp else iconPadding
 
     Box(
         modifier = GlanceModifier
@@ -46,7 +48,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
             contentDescription = state.phase.displayName,
             modifier = GlanceModifier
                 .size(moonDiameter)
-                .padding(iconPadding),
+                .padding(effectiveIconPadding),
         )
 
         // Overlay text in the bottom-left corner
