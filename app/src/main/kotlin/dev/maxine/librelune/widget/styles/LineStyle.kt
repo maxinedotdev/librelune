@@ -5,10 +5,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
-import androidx.glance.Image
-import androidx.glance.ImageProvider
+import androidx.glance.LocalSize
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
+import androidx.glance.appwidget.cornerRadius
+import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -21,29 +22,35 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.data.WidgetSettings
+import dev.maxine.librelune.moon.MoonPhase
 import dev.maxine.librelune.moon.MoonState
-import dev.maxine.librelune.widget.MoonGlyph
 
 @Composable
 fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
+    val size = LocalSize.current
+    val compact = size.width <= 120.dp || size.height <= 120.dp
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .padding(8.dp)
+            .background(ColorProvider(Color(0xFF0B1220)))
+            .cornerRadius(16.dp)
+            .padding(if (compact) 6.dp else 8.dp)
             .clickable(clickAction),
         contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Image(
-                provider = ImageProvider(MoonGlyph.drawableRes(state.phase, settings.hemisphere)),
-                contentDescription = state.phase.displayName,
-                modifier = GlanceModifier.size(64.dp),
+            Text(
+                text = lineGlyph(state.phase),
+                style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontSize = if (compact) 34.sp else 46.sp,
+                ),
             )
-            if (settings.showPhaseName) {
+            if (!compact && settings.showPhaseName) {
                 Spacer(GlanceModifier.height(4.dp))
                 Text(
                     text = state.phase.displayName,
@@ -54,7 +61,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                     ),
                 )
             }
-            if (settings.showIllumination) {
+            if (!compact && settings.showIllumination) {
                 Text(
                     text = "${state.illuminationPct}%",
                     style = TextStyle(
@@ -63,7 +70,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                     ),
                 )
             }
-            if (settings.showDaysToFull) {
+            if (!compact && settings.showDaysToFull) {
                 val days = state.daysToFull.toInt()
                 Text(
                     text = "Full in ${days}d",
@@ -73,7 +80,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                     ),
                 )
             }
-            if (settings.showDaysToNew) {
+            if (!compact && settings.showDaysToNew) {
                 val days = state.daysToNew.toInt()
                 Text(
                     text = "New in ${days}d",
@@ -85,4 +92,15 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             }
         }
     }
+}
+
+private fun lineGlyph(phase: MoonPhase): String = when (phase) {
+    MoonPhase.NEW -> "●"
+    MoonPhase.WAXING_CRESCENT -> "◔"
+    MoonPhase.FIRST_QUARTER -> "◑"
+    MoonPhase.WAXING_GIBBOUS -> "◕"
+    MoonPhase.FULL -> "○"
+    MoonPhase.WANING_GIBBOUS -> "◕"
+    MoonPhase.THIRD_QUARTER -> "◐"
+    MoonPhase.WANING_CRESCENT -> "◔"
 }

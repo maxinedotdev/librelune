@@ -5,10 +5,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalSize
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
+import androidx.glance.background
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -23,11 +26,17 @@ import dev.maxine.librelune.widget.MoonGlyph
 
 @Composable
 fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
+    val size = LocalSize.current
+    val compact = size.width <= 120.dp || size.height <= 120.dp
+
     Box(
-        modifier = GlanceModifier.fillMaxSize().clickable(clickAction),
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(ColorProvider(Color(0xFF05070C)))
+            .cornerRadius(18.dp)
+            .clickable(clickAction),
         contentAlignment = Alignment.Center,
     ) {
-        // Full-bleed illustration (placeholder vector now; replace with PNG/WebP in drawable-*)
         Image(
             provider = ImageProvider(MoonGlyph.drawableRes(state.phase, settings.hemisphere)),
             contentDescription = state.phase.displayName,
@@ -42,7 +51,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
             contentAlignment = Alignment.BottomStart,
         ) {
             Column {
-                if (settings.showPhaseName) {
+                if (!compact && settings.showPhaseName) {
                     Text(
                         text = state.phase.displayName,
                         style = TextStyle(
@@ -56,11 +65,11 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
                         text = "${state.illuminationPct}%",
                         style = TextStyle(
                             color = ColorProvider(Color.White.copy(alpha = 0.8f)),
-                            fontSize = 10.sp,
+                            fontSize = if (compact) 9.sp else 10.sp,
                         ),
                     )
                 }
-                if (settings.showDaysToFull) {
+                if (!compact && settings.showDaysToFull) {
                     Text(
                         text = "Full in ${state.daysToFull.toInt()}d",
                         style = TextStyle(
@@ -69,7 +78,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
                         ),
                     )
                 }
-                if (settings.showDaysToNew) {
+                if (!compact && settings.showDaysToNew) {
                     Text(
                         text = "New in ${state.daysToNew.toInt()}d",
                         style = TextStyle(
