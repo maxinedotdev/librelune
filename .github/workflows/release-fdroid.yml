@@ -40,19 +40,29 @@ jobs:
               uses: gradle/actions/setup-gradle@v6
 
             - name: Write signing config
+              env:
+                  ANDROID_RELEASE_KEYSTORE_B64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}
+                  ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+                  ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+                  ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
               shell: bash
               run: |
                   set -euo pipefail
-                  if [[ -n "${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}" ]]; then
+                  if [[ -n "$ANDROID_RELEASE_KEYSTORE_B64" ]]; then
                       KEYSTORE_PATH="$RUNNER_TEMP/librelune-release.jks"
-                      echo "${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}" \
+                      echo "$ANDROID_RELEASE_KEYSTORE_B64" \
                           | tr -d '[:space:]' | base64 --decode > "$KEYSTORE_PATH"
-                      cat > keystore.properties <<EOF
-                      LIBRELUNE_RELEASE_STORE_FILE=$KEYSTORE_PATH
-                      LIBRELUNE_RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
-                      LIBRELUNE_RELEASE_KEY_ALIAS=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
-                      LIBRELUNE_RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
-                      EOF
+
+                      STORE_PASSWORD="$(printf '%s' "$ANDROID_RELEASE_STORE_PASSWORD" | tr -d '\r\n')"
+                      KEY_ALIAS="$(printf '%s' "$ANDROID_RELEASE_KEY_ALIAS" | tr -d '\r\n')"
+                      KEY_PASSWORD="$(printf '%s' "$ANDROID_RELEASE_KEY_PASSWORD" | tr -d '\r\n')"
+
+                      umask 077
+                      printf '%s\n' "LIBRELUNE_RELEASE_STORE_FILE=$KEYSTORE_PATH" > keystore.properties
+                      printf '%s\n' "LIBRELUNE_RELEASE_STORE_PASSWORD=$STORE_PASSWORD" >> keystore.properties
+                      printf '%s\n' "LIBRELUNE_RELEASE_KEY_ALIAS=$KEY_ALIAS" >> keystore.properties
+                      printf '%s\n' "LIBRELUNE_RELEASE_KEY_PASSWORD=$KEY_PASSWORD" >> keystore.properties
+                      chmod 600 keystore.properties "$KEYSTORE_PATH"
                       echo "::notice::Keystore present — APK will be release-signed."
                   else
                       echo "::warning::ANDROID_RELEASE_KEYSTORE_B64 not set — APK will be unsigned."
@@ -68,7 +78,7 @@ jobs:
             - name: Clean signing config
               if: always()
               shell: bash
-              run: rm -f keystore.properties
+                            run: rm -f keystore.properties "$RUNNER_TEMP/librelune-release.jks"
 
             - name: Upload release APK artifact
               uses: actions/upload-artifact@v7
