@@ -11,4 +11,5 @@ data class WidgetSettings(
     val showDaysToNew: Boolean = false,
     val hemisphere: Hemisphere = Hemisphere.NORTHERN,
     val iconPaddingDp: Int = 6,
+    val lineStrokeDp: Int = 2,
 )

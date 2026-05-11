@@ -22,6 +22,7 @@ class WidgetSettingsRepo(private val context: Context) {
     private fun showDaysNewKey(id: Int) = booleanPreferencesKey("widget_${id}_show_days_new")
     private fun hemisphereKey(id: Int) = stringPreferencesKey("widget_${id}_hemisphere")
     private fun iconPaddingKey(id: Int) = stringPreferencesKey("widget_${id}_icon_padding_dp")
+    private fun lineStrokeKey(id: Int) = stringPreferencesKey("widget_${id}_line_stroke_dp")
 
     fun flow(appWidgetId: Int): Flow<WidgetSettings> =
         context.dataStore.data.map { prefs -> prefs.toSettings(appWidgetId) }
@@ -38,6 +39,7 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs[showDaysNewKey(appWidgetId)] = settings.showDaysToNew
             prefs[hemisphereKey(appWidgetId)] = settings.hemisphere.name
             prefs[iconPaddingKey(appWidgetId)] = settings.iconPaddingDp.toString()
+            prefs[lineStrokeKey(appWidgetId)] = settings.lineStrokeDp.toString()
         }
     }
 
@@ -50,6 +52,7 @@ class WidgetSettingsRepo(private val context: Context) {
             prefs.remove(showDaysNewKey(appWidgetId))
             prefs.remove(hemisphereKey(appWidgetId))
             prefs.remove(iconPaddingKey(appWidgetId))
+            prefs.remove(lineStrokeKey(appWidgetId))
         }
     }
 
@@ -64,5 +67,7 @@ class WidgetSettingsRepo(private val context: Context) {
             ?: WidgetSettings().hemisphere,
         iconPaddingDp = this[iconPaddingKey(id)]?.toIntOrNull()?.coerceIn(0, 24)
             ?: WidgetSettings().iconPaddingDp,
+        lineStrokeDp = this[lineStrokeKey(id)]?.toIntOrNull()?.coerceIn(1, 8)
+            ?: WidgetSettings().lineStrokeDp,
     )
 }

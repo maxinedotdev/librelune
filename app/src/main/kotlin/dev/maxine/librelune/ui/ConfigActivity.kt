@@ -108,6 +108,7 @@ private fun ConfigScreen(
     var showDaysToNew by remember { mutableStateOf(defaults.showDaysToNew) }
     var hemisphere by remember { mutableStateOf(defaults.hemisphere) }
     var iconPaddingDp by remember { mutableStateOf(defaults.iconPaddingDp.toFloat()) }
+    var lineStrokeDp by remember { mutableStateOf(defaults.lineStrokeDp.toFloat()) }
 
     LaunchedEffect(appWidgetId) {
         val saved = repo.read(appWidgetId)
@@ -118,6 +119,7 @@ private fun ConfigScreen(
         showDaysToNew = saved.showDaysToNew
         hemisphere = saved.hemisphere
         iconPaddingDp = saved.iconPaddingDp.toFloat()
+        lineStrokeDp = saved.lineStrokeDp.toFloat()
     }
 
     Scaffold(
@@ -161,7 +163,7 @@ private fun ConfigScreen(
                 }
             }
             Text(
-                "Determines which side of the moon appears illuminated.",
+                "Hemisphere flips visual orientation. Moon phase and illumination are geocentric and only weakly location-dependent.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -181,6 +183,23 @@ private fun ConfigScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            if (style == WidgetStyle.LINE) {
+                Text("Line thickness", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = "${lineStrokeDp.toInt()} dp",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End,
+                )
+                Slider(
+                    value = lineStrokeDp,
+                    onValueChange = { lineStrokeDp = it.coerceIn(1f, 8f) },
+                    valueRange = 1f..8f,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
             Spacer(Modifier.height(8.dp))
 
             Row(
@@ -198,6 +217,7 @@ private fun ConfigScreen(
                             showDaysToNew = showDaysToNew,
                             hemisphere = hemisphere,
                             iconPaddingDp = iconPaddingDp.toInt().coerceIn(0, 24),
+                            lineStrokeDp = lineStrokeDp.toInt().coerceIn(1, 8),
                         )
                     )
                 }) { Text("Save") }

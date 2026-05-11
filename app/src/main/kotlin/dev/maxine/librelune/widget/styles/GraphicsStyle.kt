@@ -10,7 +10,6 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
-import androidx.glance.background
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -35,7 +34,6 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(Color(0xFF05070C)))
             .cornerRadius(18.dp)
             .clickable(clickAction),
         contentAlignment = Alignment.Center,
@@ -56,12 +54,12 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
             contentAlignment = Alignment.BottomStart,
         ) {
             Column {
-                if (!compact && settings.showPhaseName) {
+                if (settings.showPhaseName) {
                     Text(
                         text = state.phase.displayName,
                         style = TextStyle(
                             color = ColorProvider(Color.White),
-                            fontSize = 11.sp,
+                            fontSize = if (compact) 9.sp else 11.sp,
                         ),
                     )
                 }
@@ -74,18 +72,18 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
                         ),
                     )
                 }
-                if (!compact && settings.showDaysToFull) {
+                if (settings.showDaysToFull) {
                     Text(
-                        text = "Full in ${state.daysToFull.toInt()}d",
+                        text = if (compact) "F+${state.daysToFull.toInt()}d" else "Full in ${state.daysToFull.toInt()}d",
                         style = TextStyle(
                             color = ColorProvider(Color.White.copy(alpha = 0.7f)),
                             fontSize = 9.sp,
                         ),
                     )
                 }
-                if (!compact && settings.showDaysToNew) {
+                if (settings.showDaysToNew) {
                     Text(
-                        text = "New in ${state.daysToNew.toInt()}d",
+                        text = if (compact) "N+${state.daysToNew.toInt()}d" else "New in ${state.daysToNew.toInt()}d",
                         style = TextStyle(
                             color = ColorProvider(Color.White.copy(alpha = 0.7f)),
                             fontSize = 9.sp,

@@ -35,13 +35,14 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val compact = size.width <= 120.dp || size.height <= 120.dp
     val lineColor = ColorProvider(Color(0xFFE8EEF9))
     val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
+    val lineStroke = settings.lineStrokeDp.coerceIn(1, 8).toFloat()
     val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
     val moonBitmap = remember(phaseFraction, settings.hemisphere) {
         MoonLineBitmapFactory.render(
             phaseFraction = phaseFraction,
             hemisphere = settings.hemisphere,
             sizePx = if (compact) 360 else 420,
-            strokePx = if (compact) 4f else 5f,
+            strokePx = lineStroke,
         )
     }
 
@@ -50,7 +51,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
             .fillMaxSize()
             .background(ColorProvider(Color(0x14101521)))
             .cornerRadius(14.dp)
-            .padding(if (compact) 6.dp else 8.dp)
+            .padding(if (compact) 2.dp else 4.dp)
             .clickable(clickAction),
         contentAlignment = Alignment.Center,
     ) {
@@ -64,40 +65,40 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                     .width(if (compact) 74.dp else 84.dp)
                     .padding(iconPadding),
             )
-            if (!compact && settings.showPhaseName) {
+            if (settings.showPhaseName) {
                 Spacer(GlanceModifier.height(4.dp))
                 Text(
                     text = state.phase.displayName,
                     style = TextStyle(
                         color = lineColor,
-                        fontSize = 11.sp,
+                        fontSize = if (compact) 9.sp else 11.sp,
                         fontWeight = FontWeight.Medium,
                     ),
                 )
             }
-            if (!compact && settings.showIllumination) {
+            if (settings.showIllumination) {
                 Text(
                     text = "${state.illuminationPct}%",
                     style = TextStyle(
                         color = ColorProvider(Color(0xFFAEB9CC)),
-                        fontSize = 10.sp,
+                        fontSize = if (compact) 9.sp else 10.sp,
                     ),
                 )
             }
-            if (!compact && settings.showDaysToFull) {
+            if (settings.showDaysToFull) {
                 val days = state.daysToFull.toInt()
                 Text(
-                    text = "Full in ${days}d",
+                    text = if (compact) "F+${days}d" else "Full in ${days}d",
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF8D99AE)),
                         fontSize = 9.sp,
                     ),
                 )
             }
-            if (!compact && settings.showDaysToNew) {
+            if (settings.showDaysToNew) {
                 val days = state.daysToNew.toInt()
                 Text(
-                    text = "New in ${days}d",
+                    text = if (compact) "N+${days}d" else "New in ${days}d",
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF8D99AE)),
                         fontSize = 9.sp,

@@ -7,7 +7,6 @@ import android.graphics.Path
 import android.graphics.RectF
 import dev.maxine.librelune.data.Hemisphere
 import kotlin.math.cos
-import kotlin.math.max
 
 object MoonLineBitmapFactory {
     fun render(
@@ -25,7 +24,7 @@ object MoonLineBitmapFactory {
             color = 0xFFE8EEF9.toInt()
         }
 
-        val pad = max(strokePx * 2f, sizePx * 0.08f)
+        val pad = strokePx * 1.5f
         val radius = (sizePx / 2f) - pad
         val cx = sizePx / 2f
         val cy = sizePx / 2f
