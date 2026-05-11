@@ -18,6 +18,35 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val releaseStoreFile = providers.gradleProperty("LIBRELUNE_RELEASE_STORE_FILE")
+        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_STORE_FILE"))
+        .orNull
+    val releaseStorePassword = providers.gradleProperty("LIBRELUNE_RELEASE_STORE_PASSWORD")
+        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_STORE_PASSWORD"))
+        .orNull
+    val releaseKeyAlias = providers.gradleProperty("LIBRELUNE_RELEASE_KEY_ALIAS")
+        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_KEY_ALIAS"))
+        .orNull
+    val releaseKeyPassword = providers.gradleProperty("LIBRELUNE_RELEASE_KEY_PASSWORD")
+        .orElse(providers.environmentVariable("LIBRELUNE_RELEASE_KEY_PASSWORD"))
+        .orNull
+
+    val hasReleaseSigning = !releaseStoreFile.isNullOrBlank() &&
+        !releaseStorePassword.isNullOrBlank() &&
+        !releaseKeyAlias.isNullOrBlank() &&
+        !releaseKeyPassword.isNullOrBlank()
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -25,6 +54,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
