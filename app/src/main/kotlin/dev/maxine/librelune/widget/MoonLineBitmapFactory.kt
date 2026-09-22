@@ -55,8 +55,8 @@ object MoonLineBitmapFactory {
         // terminator curve and the half-circle arc share real path joins
         // (round join) instead of butting two stroke caps together, which
         // previously produced a visible seam at top/bottom.
-        val apexOffset = radius * (1.0 - (2.0 * illumination)).toFloat() * if (litRight) 1f else -1f
         val terminatorHalfWidth = radius * abs(1.0 - (2.0 * illumination)).toFloat()
+        val terminatorBulgesRight = if (illumination <= 0.5) litRight else !litRight
 
         // After the terminator the current point is at the BOTTOM of the
         // moon, so the arc must also start at the bottom (90deg) and sweep
@@ -78,7 +78,7 @@ object MoonLineBitmapFactory {
                     cx + terminatorHalfWidth,
                     cy + radius,
                 )
-                val terminatorSweep = if (apexOffset >= 0f) 180f else -180f
+                val terminatorSweep = if (terminatorBulgesRight) 180f else -180f
                 arcTo(terminator, 270f, terminatorSweep, false)
             }
             arcTo(circle, 90f, arcSweep, false)
