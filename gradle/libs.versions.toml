@@ -1,7 +1,6 @@
 [versions]
 agp = "9.3.1"
 kotlin = "2.4.10"
-compose-compiler = "1.5.11"
 compose-bom = "2026.06.01"
 compose-activity = "1.13.0"
 compose-ui-tooling-preview = "1.11.4"

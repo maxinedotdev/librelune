@@ -60,7 +60,6 @@ import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.ui.theme.LibreluneTheme
 import dev.maxine.librelune.widget.MoonGlyph
 import dev.maxine.librelune.widget.MoonLineBitmapFactory
-import dev.maxine.librelune.widget.MoonRenderPhase
 import dev.maxine.librelune.widget.MoonWidget
 import kotlinx.coroutines.launch
 import kotlin.math.PI
@@ -425,8 +424,7 @@ private fun LinePreview(settings: WidgetSettings, state: MoonState) {
 @Composable
 private fun GraphicsPreview(settings: WidgetSettings, state: MoonState) {
     val wobble = if (settings.wobbleEnabled) state.wobbleDeg else 0f
-    val renderPhase = MoonRenderPhase.fromState(state)
-    val drawableRes = MoonGlyph.drawableRes(renderPhase, settings.hemisphere)
+    val drawableRes = MoonGlyph.drawableRes(state.phase, settings.hemisphere)
 
     Row(
         modifier = Modifier.fillMaxSize(),
