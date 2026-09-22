@@ -1,5 +1,8 @@
 package dev.maxine.librelune.moon
 
+/** Length of one mean synodic month (new moon to new moon), in days. */
+internal const val SYNODIC_MONTH_DAYS = 29.530588853
+
 enum class MoonPhase(val displayName: String, val shortName: String) {
     NEW("New Moon", "New"),
     WAXING_CRESCENT("Waxing Crescent", "WxCr"),
@@ -11,7 +14,6 @@ enum class MoonPhase(val displayName: String, val shortName: String) {
     WANING_CRESCENT("Waning Crescent", "WnCr");
 
     companion object {
-        private const val SYNODIC_MONTH_DAYS = 29.530588853
         private const val OCTANT_DAYS = SYNODIC_MONTH_DAYS / 8.0
 
         fun fromAgeDays(ageDays: Double): MoonPhase {

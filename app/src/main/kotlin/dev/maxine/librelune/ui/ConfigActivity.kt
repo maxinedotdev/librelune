@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,6 +58,7 @@ import dev.maxine.librelune.data.WidgetSettingsRepo
 import dev.maxine.librelune.data.WidgetStyle
 import dev.maxine.librelune.moon.MoonPhase
 import dev.maxine.librelune.moon.MoonState
+import dev.maxine.librelune.moon.SYNODIC_MONTH_DAYS
 import dev.maxine.librelune.ui.theme.LibreluneTheme
 import dev.maxine.librelune.widget.MoonGlyph
 import dev.maxine.librelune.widget.MoonLineBitmapFactory
@@ -377,7 +379,7 @@ private fun MoonPreviewCard(settings: WidgetSettings, phaseFraction: Float) {
 
 @Composable
 private fun LinePreview(settings: WidgetSettings, state: MoonState) {
-    val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
+    val phaseFraction = state.phaseFraction
     val wobble = if (settings.wobbleEnabled) state.wobbleDeg else 0f
     val bitmap = remember(
         phaseFraction,
@@ -408,16 +410,7 @@ private fun LinePreview(settings: WidgetSettings, state: MoonState) {
             contentScale = ContentScale.Fit,
         )
 
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            if (settings.showPhaseName) Text(state.phase.shortName, style = MaterialTheme.typography.titleSmall)
-            if (settings.showIllumination) Text("${state.illuminationPct}%", style = MaterialTheme.typography.bodyMedium)
-            if (settings.showDaysToFull) Text("F+${state.daysToFull.toInt()}d", style = MaterialTheme.typography.bodySmall)
-            if (settings.showDaysToNew) Text("N+${state.daysToNew.toInt()}d", style = MaterialTheme.typography.bodySmall)
-        }
+        PreviewTextColumn(settings, state)
     }
 }
 
@@ -440,16 +433,22 @@ private fun GraphicsPreview(settings: WidgetSettings, state: MoonState) {
             contentScale = ContentScale.Fit,
         )
 
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            if (settings.showPhaseName) Text(state.phase.shortName, style = MaterialTheme.typography.titleSmall)
-            if (settings.showIllumination) Text("${state.illuminationPct}%", style = MaterialTheme.typography.bodyMedium)
-            if (settings.showDaysToFull) Text("F+${state.daysToFull.toInt()}d", style = MaterialTheme.typography.bodySmall)
-            if (settings.showDaysToNew) Text("N+${state.daysToNew.toInt()}d", style = MaterialTheme.typography.bodySmall)
-        }
+        PreviewTextColumn(settings, state)
+    }
+}
+
+/** Text rows shown beside both previews; mirrors the widget's text toggles. */
+@Composable
+private fun RowScope.PreviewTextColumn(settings: WidgetSettings, state: MoonState) {
+    Column(
+        modifier = Modifier.weight(1f),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        if (settings.showPhaseName) Text(state.phase.shortName, style = MaterialTheme.typography.titleSmall)
+        if (settings.showIllumination) Text("${state.illuminationPct}%", style = MaterialTheme.typography.bodyMedium)
+        if (settings.showDaysToFull) Text("F+${state.daysToFull.toInt()}d", style = MaterialTheme.typography.bodySmall)
+        if (settings.showDaysToNew) Text("N+${state.daysToNew.toInt()}d", style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -495,4 +494,3 @@ private fun approximateWobbleDeg(latitudeDeg: Double, phaseFraction: Double): Fl
     return ((baseDeg + latDeg) * cycle).toFloat()
 }
 
-private const val SYNODIC_MONTH_DAYS = 29.530588853
