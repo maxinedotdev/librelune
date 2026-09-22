@@ -15,9 +15,9 @@ import kotlin.math.cos
  *
  * [darkRegionWidth] spans from the widget border on the dark side to the
  * terminator's apex (the deepest point of the curve, at vertical
- * mid-height), so the text never overlaps the lit curve. The quadratic
- * bezier midpoint at t=0.5 is (cx + 0.5*xOffset, cy), with
- * xOffset = r * (1 - 2*illum) and the sign following the lit side.
+ * mid-height), so the text never overlaps the lit curve. The line renderer
+ * draws the terminator as a half-ellipse whose horizontal apex offset is
+ * r * (1 - 2*illum) with the sign following the lit side.
  */
 internal data class MoonLayout(
     val textOnLeft: Boolean,
@@ -47,7 +47,7 @@ internal fun moonLayout(
 
     val illumination = state.illuminationPct.coerceIn(0, 100) / 100f
     val sideSign = if (litRight) 1f else -1f
-    val curveApexOffset = moonRadius * (0.5f * (1f - 2f * illumination)) * sideSign
+    val curveApexOffset = moonRadius * (1f - 2f * illumination) * sideSign
     val wobbleCos = cos(Math.toRadians(state.wobbleDeg.toDouble())).toFloat()
     val curveApexX = widgetWidth / 2 + (curveApexOffset * wobbleCos)
 

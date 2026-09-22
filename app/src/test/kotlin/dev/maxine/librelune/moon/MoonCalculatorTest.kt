@@ -5,6 +5,8 @@ import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.shredzone.commons.suncalc.MoonIllumination
+import org.shredzone.commons.suncalc.MoonPosition
 
 class MoonCalculatorTest {
     @Test
@@ -16,5 +18,50 @@ class MoonCalculatorTest {
 
         assertEquals(MoonPhase.FULL, result.phase)
         assertTrue(result.illuminationPct >= 95)
+    }
+
+    @Test
+    fun `imminent full moon is not skipped to next synodic month`() {
+        val calculator = MoonCalculator(ZoneOffset.UTC)
+
+        val result = calculator.now(ZonedDateTime.of(2024, 4, 23, 12, 0, 0, 0, ZoneOffset.UTC))
+
+        assertTrue(result.daysToFull in 0.4..0.6, "Expected <1 day to full moon, got ${result.daysToFull}")
+    }
+
+    @Test
+    fun `imminent new moon is not skipped to next synodic month`() {
+        val calculator = MoonCalculator(ZoneOffset.UTC)
+
+        val result = calculator.now(ZonedDateTime.of(2024, 4, 8, 12, 0, 0, 0, ZoneOffset.UTC))
+
+        assertTrue(result.daysToNew in 0.2..0.3, "Expected <1 day to new moon, got ${result.daysToNew}")
+    }
+
+    @Test
+    fun `wobble uses full bright limb zenith angle instead of clamping`() {
+        val now = ZonedDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC)
+        val latitude = 52.5
+        val longitude = 13.4
+        val calculator = MoonCalculator(
+            zoneId = ZoneOffset.UTC,
+            wobbleEnabled = true,
+            latitudeDeg = latitude,
+            longitudeDeg = longitude,
+        )
+
+        val result = calculator.now(now)
+        val expected = -(MoonIllumination.compute()
+            .on(now)
+            .at(latitude, longitude)
+            .execute()
+            .angle - MoonPosition.compute()
+            .on(now)
+            .at(latitude, longitude)
+            .execute()
+            .parallacticAngle).toFloat()
+
+        assertEquals(expected, result.wobbleDeg, 0.001f)
+        assertTrue(result.wobbleDeg > 25f)
     }
 }

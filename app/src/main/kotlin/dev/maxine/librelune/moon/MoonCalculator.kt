@@ -27,13 +27,13 @@ class MoonCalculator(
             .execute()
 
         val nextFull = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now.plusDays(1))
+            .on(now)
             .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.FULL_MOON)
             .execute()
             .time
 
         val nextNew = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now.plusDays(1))
+            .on(now)
             .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.NEW_MOON)
             .execute()
             .time
@@ -66,10 +66,7 @@ class MoonCalculator(
             // MoonIllumination.angle - MoonPosition.parallacticAngle
             // suncalc expresses this angle as anticlockwise-positive, while
             // Android Canvas rotation is clockwise-positive, so invert sign.
-            // Clamp to a libration-style nod range so the moon never rotates
-            // far enough to flip a quarter into a "bowl" shape.
-            val raw = -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
-            raw.coerceIn(-25f, 25f)
+            -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
         } else {
             0f
         }
