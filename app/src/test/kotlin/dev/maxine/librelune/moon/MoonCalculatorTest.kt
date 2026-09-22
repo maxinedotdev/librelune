@@ -1,5 +1,6 @@
 package dev.maxine.librelune.moon
 
+import dev.maxine.librelune.data.Hemisphere
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.test.Test
@@ -39,8 +40,11 @@ class MoonCalculatorTest {
     }
 
     @Test
-    fun `wobble uses normalized bright limb angle instead of 25 degree clamp`() {
-        val now = ZonedDateTime.of(2024, 4, 23, 12, 0, 0, 0, ZoneOffset.UTC)
+    fun `wobble subtracts the artwork's canonical limb orientation`() {
+        // Berlin, north hemisphere, waxing crescent: the base artwork draws the
+        // lit limb on the right (90deg), so the residual tilt is the true
+        // bright-limb angle minus 90deg, not the absolute angle.
+        val now = ZonedDateTime.of(2024, 4, 13, 20, 0, 0, 0, ZoneOffset.UTC)
         val latitude = 52.5
         val longitude = 13.4
         val calculator = MoonCalculator(
@@ -48,10 +52,11 @@ class MoonCalculatorTest {
             wobbleEnabled = true,
             latitudeDeg = latitude,
             longitudeDeg = longitude,
+            hemisphere = Hemisphere.NORTHERN,
         )
 
         val result = calculator.now(now)
-        val raw = -(MoonIllumination.compute()
+        val trueLimb = -(MoonIllumination.compute()
             .on(now)
             .at(latitude, longitude)
             .execute()
@@ -60,16 +65,72 @@ class MoonCalculatorTest {
             .at(latitude, longitude)
             .execute()
             .parallacticAngle).toFloat()
-        val expected = raw.let { angle ->
-            val wrapped = angle % 360f
-            when {
-                wrapped <= -180f -> wrapped + 360f
-                wrapped > 180f -> wrapped - 360f
-                else -> wrapped
-            }
-        }.coerceIn(-90f, 90f)
+        val expected = normalizeSignedDegrees(trueLimb - 90f).coerceIn(-90f, 90f)
 
         assertEquals(expected, result.wobbleDeg, 0.001f)
-        assertTrue(result.wobbleDeg > 25f)
+    }
+
+    @Test
+    fun `wobble applies only residual tilt for a near-zenith-lit gibbous moon`() {
+        // Amsterdam 2026-09-22 21:00 local (19:00 UTC), waxing gibbous ~84%.
+        // The lit limb is near the zenith, so the artwork needs almost no
+        // rotation (~+3deg) instead of the previous ~90deg error.
+        val now = ZonedDateTime.of(2026, 9, 22, 19, 0, 0, 0, ZoneOffset.UTC)
+        val calculator = MoonCalculator(
+            zoneId = ZoneOffset.UTC,
+            wobbleEnabled = true,
+            latitudeDeg = 52.3676,
+            longitudeDeg = 4.9041,
+            hemisphere = Hemisphere.NORTHERN,
+        )
+
+        val result = calculator.now(now)
+
+        assertEquals(MoonPhase.WAXING_GIBBOUS, result.phase)
+        assertTrue(
+            kotlin.math.abs(result.wobbleDeg) < 15f,
+            "Expected a small residual tilt, got ${result.wobbleDeg}",
+        )
+    }
+
+    @Test
+    fun `wobble mirrors the base orientation in the south hemisphere`() {
+        // Sydney, south hemisphere, waning crescent: the base artwork draws the
+        // lit limb on the right (90deg) for waning-south, so the residual is
+        // again true limb minus 90deg.
+        val now = ZonedDateTime.of(2024, 4, 13, 10, 0, 0, 0, ZoneOffset.UTC)
+        val latitude = -33.87
+        val longitude = 151.21
+        val calculator = MoonCalculator(
+            zoneId = ZoneOffset.UTC,
+            wobbleEnabled = true,
+            latitudeDeg = latitude,
+            longitudeDeg = longitude,
+            hemisphere = Hemisphere.SOUTHERN,
+        )
+
+        val result = calculator.now(now)
+        val trueLimb = -(MoonIllumination.compute()
+            .on(now)
+            .at(latitude, longitude)
+            .execute()
+            .angle - MoonPosition.compute()
+            .on(now)
+            .at(latitude, longitude)
+            .execute()
+            .parallacticAngle).toFloat()
+        val base = if (result.phaseFraction >= 0.5) 90f else 270f
+        val expected = normalizeSignedDegrees(trueLimb - base).coerceIn(-90f, 90f)
+
+        assertEquals(expected, result.wobbleDeg, 0.001f)
+    }
+}
+
+private fun normalizeSignedDegrees(angle: Float): Float {
+    val wrapped = angle % 360f
+    return when {
+        wrapped <= -180f -> wrapped + 360f
+        wrapped > 180f -> wrapped - 360f
+        else -> wrapped
     }
 }

@@ -35,6 +35,7 @@ class MoonWidget : GlanceAppWidget() {
                 wobbleEnabled = settings.wobbleEnabled,
                 latitudeDeg = settings.latitudeDeg,
                 longitudeDeg = settings.longitudeDeg,
+                hemisphere = settings.hemisphere,
             ).now()
 
             val clickAction = actionStartActivity(

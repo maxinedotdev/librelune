@@ -1,5 +1,6 @@
 package dev.maxine.librelune.moon
 
+import dev.maxine.librelune.data.Hemisphere
 import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -14,6 +15,7 @@ class MoonCalculator(
     private val wobbleEnabled: Boolean = false,
     private val latitudeDeg: Double = 0.0,
     private val longitudeDeg: Double = 0.0,
+    private val hemisphere: Hemisphere = Hemisphere.NORTHERN,
 ) {
     fun now(now: ZonedDateTime = ZonedDateTime.now(zoneId)): MoonState {
         val latitude = latitudeDeg.coerceIn(-90.0, 90.0)
@@ -66,12 +68,24 @@ class MoonCalculator(
             // MoonIllumination.angle - MoonPosition.parallacticAngle
             // suncalc expresses this angle as anticlockwise-positive, while
             // Android Canvas rotation is clockwise-positive, so invert sign.
-            // Normalize into a signed range, then keep a bounded decorative
-            // tilt that still allows "bowl" crescents without saturating at
-            // the previous ±25° clamp.
-            normalizeSignedDegrees(
-                -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat(),
-            ).coerceIn(-90f, 90f)
+            // This yields the true clockwise-from-zenith angle of the
+            // illuminated limb.
+            val trueLimbDeg = -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
+
+            // The base artwork (and the procedural line path) already draws the
+            // illuminated limb at a canonical orientation: 90deg (right) when the
+            // lit side is on the right, 270deg (left) otherwise. The lit side
+            // depends on waxing/waning (matching MoonState.phaseFraction < 0.5
+            // for waxing) plus hemisphere. Subtract that baked-in orientation so
+            // only the residual observer tilt is applied, then keep a bounded
+            // decorative tilt.
+            val litRight = when (hemisphere) {
+                Hemisphere.NORTHERN -> !isWaning
+                Hemisphere.SOUTHERN -> isWaning
+            }
+            val baseLimbDeg = if (litRight) 90f else 270f
+
+            normalizeSignedDegrees(trueLimbDeg - baseLimbDeg).coerceIn(-90f, 90f)
         } else {
             0f
         }
