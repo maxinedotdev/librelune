@@ -39,8 +39,8 @@ class MoonCalculatorTest {
     }
 
     @Test
-    fun `wobble uses full bright limb zenith angle instead of clamping`() {
-        val now = ZonedDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC)
+    fun `wobble uses normalized bright limb angle instead of 25 degree clamp`() {
+        val now = ZonedDateTime.of(2024, 4, 23, 12, 0, 0, 0, ZoneOffset.UTC)
         val latitude = 52.5
         val longitude = 13.4
         val calculator = MoonCalculator(
@@ -51,7 +51,7 @@ class MoonCalculatorTest {
         )
 
         val result = calculator.now(now)
-        val expected = -(MoonIllumination.compute()
+        val raw = -(MoonIllumination.compute()
             .on(now)
             .at(latitude, longitude)
             .execute()
@@ -60,6 +60,14 @@ class MoonCalculatorTest {
             .at(latitude, longitude)
             .execute()
             .parallacticAngle).toFloat()
+        val expected = raw.let { angle ->
+            val wrapped = angle % 360f
+            when {
+                wrapped <= -180f -> wrapped + 360f
+                wrapped > 180f -> wrapped - 360f
+                else -> wrapped
+            }
+        }.coerceIn(-90f, 90f)
 
         assertEquals(expected, result.wobbleDeg, 0.001f)
         assertTrue(result.wobbleDeg > 25f)

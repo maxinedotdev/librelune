@@ -66,7 +66,12 @@ class MoonCalculator(
             // MoonIllumination.angle - MoonPosition.parallacticAngle
             // suncalc expresses this angle as anticlockwise-positive, while
             // Android Canvas rotation is clockwise-positive, so invert sign.
-            -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
+            // Normalize into a signed range, then keep a bounded decorative
+            // tilt that still allows "bowl" crescents without saturating at
+            // the previous ±25° clamp.
+            normalizeSignedDegrees(
+                -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat(),
+            ).coerceIn(-90f, 90f)
         } else {
             0f
         }
@@ -79,6 +84,15 @@ class MoonCalculator(
             daysToNew = Duration.between(now, nextNew).toHours().toDouble() / 24.0,
             wobbleDeg = wobbleDeg,
         )
+    }
+}
+
+private fun normalizeSignedDegrees(angle: Float): Float {
+    val wrapped = angle % 360f
+    return when {
+        wrapped <= -180f -> wrapped + 360f
+        wrapped > 180f -> wrapped - 360f
+        else -> wrapped
     }
 }
 

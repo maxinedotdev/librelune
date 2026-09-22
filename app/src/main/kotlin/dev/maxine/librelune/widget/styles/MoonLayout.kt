@@ -44,7 +44,6 @@ internal fun moonLayout(
     moonRadius: Dp,
 ): MoonLayout {
     val litRight = litSideOnRight(state.phaseFraction, hemisphere)
-
     val illumination = state.illuminationPct.coerceIn(0, 100) / 100f
     val sideSign = if (litRight) 1f else -1f
     val curveApexOffset = moonRadius * (1f - 2f * illumination) * sideSign
