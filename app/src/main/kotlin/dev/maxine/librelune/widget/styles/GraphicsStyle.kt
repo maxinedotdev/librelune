@@ -21,7 +21,6 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.Text
@@ -31,7 +30,6 @@ import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.widget.MoonGlyph
-import dev.maxine.librelune.widget.MoonRenderPhase
 import dev.maxine.librelune.widget.MoonRotatedBitmapFactory
 import kotlin.math.roundToInt
 import kotlin.math.cos
@@ -54,8 +52,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
     val moonBitmapSizePx = ((moonImageDiameter.value * density).roundToInt())
         .coerceIn(128, 260)
 
-    val renderPhase = MoonRenderPhase.fromState(state)
-    val drawableRes = MoonGlyph.drawableRes(renderPhase, settings.hemisphere)
+    val drawableRes = MoonGlyph.drawableRes(state.phase, settings.hemisphere)
     val moonBitmap = remember(drawableRes, state.wobbleDeg, moonBitmapSizePx) {
         MoonRotatedBitmapFactory.render(
             context = context,

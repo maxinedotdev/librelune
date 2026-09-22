@@ -98,4 +98,5 @@ dependencies {
     implementation(libs.commons.suncalc)
 
     testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
 }
