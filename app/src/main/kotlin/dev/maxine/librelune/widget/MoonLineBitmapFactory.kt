@@ -8,6 +8,7 @@ import android.graphics.RectF
 import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.widget.styles.litSideOnRight
 import kotlin.math.cos
+import kotlin.math.abs
 
 object MoonLineBitmapFactory {
     fun render(
@@ -54,22 +55,35 @@ object MoonLineBitmapFactory {
         // terminator curve and the half-circle arc share real path joins
         // (round join) instead of butting two stroke caps together, which
         // previously produced a visible seam at top/bottom.
-        val xOffset = radius * (1.0 - (2.0 * illumination)).toFloat()
-        val ctrlX = if (litRight) cx + xOffset else cx - xOffset
+        val terminatorHalfWidth = radius * abs(1.0 - (2.0 * illumination)).toFloat()
+        val terminatorBulgesRight = if (illumination <= 0.5) litRight else !litRight
 
-        // After the terminator the current point is at the BOTTOM of the
-        // moon, so the arc must also start at the bottom (90deg) and sweep
-        // along the lit side back to the top. Sweep direction picks the side:
-        //   litRight -> sweep -180 (bottom -> right -> top)
-        //   litLeft  -> sweep +180 (bottom -> left  -> top)
-        // Using forceMoveTo=false with a matching start point avoids an
-        // implicit straight line being added before the arc.
-        val arcSweep = if (litRight) -180f else 180f
+        // Trace the terminator from the BOTTOM of the moon to the TOP, then
+        // follow the disc edge back down the illuminated side. Using start
+        // angles that match the current path point avoids implicit connector
+        // segments before either arc.
+        //   terminatorBulgesRight -> 90 + sweep -180 (bottom -> right -> top)
+        //   terminatorBulgesLeft  -> 90 + sweep +180 (bottom -> left  -> top)
+        //   litRight              -> 270 + sweep +180 (top -> right -> bottom)
+        //   litLeft               -> 270 + sweep -180 (top -> left -> bottom)
+        val circleStart = 270f
+        val circleSweep = if (litRight) 180f else -180f
 
         val path = Path().apply {
-            moveTo(cx, cy - radius)
-            quadTo(ctrlX, cy, cx, cy + radius)
-            arcTo(circle, 90f, arcSweep, false)
+            moveTo(cx, cy + radius)
+            if (terminatorHalfWidth <= 0.001f) {
+                lineTo(cx, cy - radius)
+            } else {
+                val terminator = RectF(
+                    cx - terminatorHalfWidth,
+                    cy - radius,
+                    cx + terminatorHalfWidth,
+                    cy + radius,
+                )
+                val terminatorSweep = if (terminatorBulgesRight) -180f else 180f
+                arcTo(terminator, 90f, terminatorSweep, false)
+            }
+            arcTo(circle, circleStart, circleSweep, false)
         }
         if (wobbleDeg != 0f) {
             canvas.save()

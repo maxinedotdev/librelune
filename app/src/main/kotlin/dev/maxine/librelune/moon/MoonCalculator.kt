@@ -27,13 +27,13 @@ class MoonCalculator(
             .execute()
 
         val nextFull = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now.plusDays(1))
+            .on(now)
             .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.FULL_MOON)
             .execute()
             .time
 
         val nextNew = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now.plusDays(1))
+            .on(now)
             .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.NEW_MOON)
             .execute()
             .time
@@ -66,10 +66,12 @@ class MoonCalculator(
             // MoonIllumination.angle - MoonPosition.parallacticAngle
             // suncalc expresses this angle as anticlockwise-positive, while
             // Android Canvas rotation is clockwise-positive, so invert sign.
-            // Clamp to a libration-style nod range so the moon never rotates
-            // far enough to flip a quarter into a "bowl" shape.
-            val raw = -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
-            raw.coerceIn(-25f, 25f)
+            // Normalize into a signed range, then keep a bounded decorative
+            // tilt that still allows "bowl" crescents without saturating at
+            // the previous ±25° clamp.
+            normalizeSignedDegrees(
+                -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat(),
+            ).coerceIn(-90f, 90f)
         } else {
             0f
         }
@@ -82,6 +84,15 @@ class MoonCalculator(
             daysToNew = Duration.between(now, nextNew).toHours().toDouble() / 24.0,
             wobbleDeg = wobbleDeg,
         )
+    }
+}
+
+private fun normalizeSignedDegrees(angle: Float): Float {
+    val wrapped = angle % 360f
+    return when {
+        wrapped <= -180f -> wrapped + 360f
+        wrapped > 180f -> wrapped - 360f
+        else -> wrapped
     }
 }
 
