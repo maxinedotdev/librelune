@@ -2,7 +2,6 @@ package dev.maxine.librelune.widget.styles
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
@@ -12,28 +11,27 @@ import androidx.glance.LocalContext
 import androidx.glance.LocalSize
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
-import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
-import androidx.glance.layout.Row
-import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.size
 import androidx.glance.layout.width
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
-import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
 import dev.maxine.librelune.widget.MoonGlyph
 import dev.maxine.librelune.widget.MoonRotatedBitmapFactory
 import kotlin.math.roundToInt
-import kotlin.math.cos
 
+/**
+ * Renders one of eight pre-baked moon drawables, chosen by the quantized
+ * [MoonState.phase].
+ *
+ * Because the artwork is bucketed into octants, this style can land on a
+ * slightly different terminator position than the continuous, curve-drawn
+ * [LineStyle] near octant boundaries. Making the two agree is future work;
+ * see [dev.maxine.librelune.widget.MoonGlyph].
+ */
 @Composable
 fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val context = LocalContext.current
@@ -62,23 +60,12 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
         )
     }
 
-    val phaseFraction = ((state.ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS / SYNODIC_MONTH_DAYS
-    val normalized = ((phaseFraction % 1.0) + 1.0) % 1.0
-    val litRight = when (settings.hemisphere) {
-        Hemisphere.NORTHERN -> normalized < 0.5
-        Hemisphere.SOUTHERN -> normalized >= 0.5
-    }
-    val illumination = (state.illuminationPct.coerceIn(0, 100) / 100f)
-    val moonRadius = moonImageDiameter / 2
-    val sideSign = if (litRight) 1f else -1f
-    val curveApexOffset = moonRadius * (0.5f * (1f - 2f * illumination)) * sideSign
-    val wobbleCos = cos(Math.toRadians(state.wobbleDeg.toDouble())).toFloat()
-    val moonCenterX = size.width / 2
-    val curveApexX = moonCenterX + (curveApexOffset * wobbleCos)
-    val leftSpace = curveApexX.coerceIn(0.dp, size.width)
-    val rightSpace = (size.width - curveApexX).coerceIn(0.dp, size.width)
-    val textOnLeft = leftSpace >= rightSpace
-    val darkRegionWidth = if (textOnLeft) leftSpace else rightSpace
+    val layout = moonLayout(
+        state = state,
+        hemisphere = settings.hemisphere,
+        widgetWidth = size.width,
+        moonRadius = moonImageDiameter / 2,
+    )
 
     Box(
         modifier = GlanceModifier
@@ -94,62 +81,18 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
                 .size(moonImageDiameter),
         )
 
-        if (hasAnyText && darkRegionWidth > 0.dp) {
-            Row(modifier = GlanceModifier.fillMaxSize()) {
-                if (!textOnLeft) {
-                    Spacer(modifier = GlanceModifier.defaultWeight())
-                }
-                Box(
-                    modifier = GlanceModifier
-                        .width(darkRegionWidth)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column {
-                        if (settings.showPhaseName) {
-                            Text(
-                                text = state.phase.shortName,
-                                style = TextStyle(
-                                    color = ColorProvider(Color.White),
-                                    fontSize = if (compact) 9.sp else 11.sp,
-                                ),
-                            )
-                        }
-                        if (settings.showIllumination) {
-                            Text(
-                                text = "${state.illuminationPct}%",
-                                style = TextStyle(
-                                    color = ColorProvider(Color.White.copy(alpha = 0.8f)),
-                                    fontSize = if (compact) 9.sp else 10.sp,
-                                ),
-                            )
-                        }
-                        if (settings.showDaysToFull) {
-                            Text(
-                                text = "F+${state.daysToFull.toInt()}d",
-                                style = TextStyle(
-                                    color = ColorProvider(Color.White.copy(alpha = 0.7f)),
-                                    fontSize = 9.sp,
-                                ),
-                            )
-                        }
-                        if (settings.showDaysToNew) {
-                            Text(
-                                text = "N+${state.daysToNew.toInt()}d",
-                                style = TextStyle(
-                                    color = ColorProvider(Color.White.copy(alpha = 0.7f)),
-                                    fontSize = 9.sp,
-                                ),
-                            )
-                        }
-                    }
-                }
-                if (textOnLeft) {
-                    Spacer(modifier = GlanceModifier.defaultWeight())
-                }
-            }
+        if (hasAnyText && layout.darkRegionWidth > 0.dp) {
+            GlanceWidgetTextColumn(
+                state = state,
+                settings = settings,
+                compact = compact,
+                layout = layout,
+                styles = WidgetTextStyles(
+                    phaseName = widgetTextStyle(0xFFFFFFFF, if (compact) 9.sp else 11.sp),
+                    illumination = widgetTextStyle(0xFFFFFFFF, if (compact) 9.sp else 10.sp, alpha = 0.8f),
+                    days = widgetTextStyle(0xFFFFFFFF, 9.sp, alpha = 0.7f),
+                ),
+            )
         }
     }
 }
-
-private const val SYNODIC_MONTH_DAYS = 29.530588853

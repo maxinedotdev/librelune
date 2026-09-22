@@ -4,6 +4,15 @@ import dev.maxine.librelune.R
 import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.moon.MoonPhase
 
+/**
+ * Maps a moon phase to the matching pre-rendered drawable.
+ *
+ * Note: this quantizes to the eight discrete [MoonPhase] buckets, whereas
+ * [dev.maxine.librelune.widget.styles.LineStyle] and
+ * [dev.maxine.librelune.widget.MoonLineBitmapFactory] draw the terminator
+ * continuously from `MoonState.phaseFraction`. The two styles can therefore
+ * differ slightly near octant boundaries. Unifying them is future work.
+ */
 object MoonGlyph {
     fun drawableRes(phase: MoonPhase, hemisphere: Hemisphere): Int =
         when (hemisphere) {

@@ -42,12 +42,11 @@ class MoonCalculator(
         //   - illumination.fraction      : 0..1 illuminated disk fraction
         //   - sign of illumination.angle : negative => waxing, positive => waning
         // ageDays = waxingHalf when waxing, else (synodic - waxingHalf).
-        val synodicDays = 29.530588853
         val fraction = illumination.fraction.coerceIn(0.0, 1.0)
-        val waxingHalfDays = (acos(1.0 - 2.0 * fraction) / PI) * (synodicDays / 2.0)
+        val waxingHalfDays = (acos(1.0 - 2.0 * fraction) / PI) * (SYNODIC_MONTH_DAYS / 2.0)
         val isWaning = illumination.angle > 0.0
-        val ageDays = (if (isWaning) synodicDays - waxingHalfDays else waxingHalfDays)
-            .coerceIn(0.0, synodicDays)
+        val ageDays = (if (isWaning) SYNODIC_MONTH_DAYS - waxingHalfDays else waxingHalfDays)
+            .coerceIn(0.0, SYNODIC_MONTH_DAYS)
         val phase = MoonPhase.fromIllumination(
             fraction = illumination.fraction,
             angleDeg = illumination.angle,
@@ -93,4 +92,14 @@ data class MoonState(
     val daysToFull: Double,
     val daysToNew: Double,
     val wobbleDeg: Float = 0f,
-)
+) {
+    /**
+     * Position within the synodic cycle, normalized to 0..1 with 0 at new
+     * moon and 0.5 at full moon. Wraps negative ages into range.
+     */
+    val phaseFraction: Double
+        get() {
+            val wrapped = ((ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS
+            return wrapped / SYNODIC_MONTH_DAYS
+        }
+}

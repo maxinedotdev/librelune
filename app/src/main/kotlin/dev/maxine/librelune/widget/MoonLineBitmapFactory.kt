@@ -6,6 +6,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import dev.maxine.librelune.data.Hemisphere
+import dev.maxine.librelune.widget.styles.litSideOnRight
 import kotlin.math.cos
 
 object MoonLineBitmapFactory {
@@ -47,10 +48,7 @@ object MoonLineBitmapFactory {
             return bitmap
         }
 
-        val litRight = when (hemisphere) {
-            Hemisphere.NORTHERN -> normalized < 0.5
-            Hemisphere.SOUTHERN -> normalized >= 0.5
-        }
+        val litRight = litSideOnRight(normalized, hemisphere)
 
         // Build the lit-side outline as ONE continuous closed path so the
         // terminator curve and the half-circle arc share real path joins
