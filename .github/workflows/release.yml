@@ -1,4 +1,4 @@
-name: Release + F-Droid
+name: Release
 
 on:
     push:
