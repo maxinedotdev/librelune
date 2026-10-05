@@ -13,20 +13,10 @@ import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "widget_settings")
 
-class WidgetSettingsRepo(private val context: Context) {
+private fun stringKey(id: Int, suffix: String) = stringPreferencesKey("widget_${id}_$suffix")
+private fun boolKey(id: Int, suffix: String) = booleanPreferencesKey("widget_${id}_$suffix")
 
-    private fun styleKey(id: Int) = stringPreferencesKey("widget_${id}_style")
-    private fun showPhaseKey(id: Int) = booleanPreferencesKey("widget_${id}_show_phase")
-    private fun showIllumKey(id: Int) = booleanPreferencesKey("widget_${id}_show_illum")
-    private fun showDaysFullKey(id: Int) = booleanPreferencesKey("widget_${id}_show_days_full")
-    private fun showDaysNewKey(id: Int) = booleanPreferencesKey("widget_${id}_show_days_new")
-    private fun hemisphereKey(id: Int) = stringPreferencesKey("widget_${id}_hemisphere")
-    private fun iconPaddingKey(id: Int) = stringPreferencesKey("widget_${id}_icon_padding_dp")
-    private fun lineStrokeKey(id: Int) = stringPreferencesKey("widget_${id}_line_stroke_dp")
-    private fun moonDiameterKey(id: Int) = stringPreferencesKey("widget_${id}_moon_diameter_pct")
-    private fun wobbleEnabledKey(id: Int) = booleanPreferencesKey("widget_${id}_wobble_enabled")
-    private fun latitudeKey(id: Int) = stringPreferencesKey("widget_${id}_latitude_deg")
-    private fun longitudeKey(id: Int) = stringPreferencesKey("widget_${id}_longitude_deg")
+class WidgetSettingsRepo(private val context: Context) {
 
     fun flow(appWidgetId: Int): Flow<WidgetSettings> =
         context.dataStore.data.map { prefs -> prefs.toSettings(appWidgetId) }
@@ -36,40 +26,43 @@ class WidgetSettingsRepo(private val context: Context) {
 
     suspend fun write(appWidgetId: Int, settings: WidgetSettings) {
         context.dataStore.edit { prefs ->
-            prefs[styleKey(appWidgetId)] = settings.style.name
-            prefs[showPhaseKey(appWidgetId)] = settings.showPhaseName
-            prefs[showIllumKey(appWidgetId)] = settings.showIllumination
-            prefs[showDaysFullKey(appWidgetId)] = settings.showDaysToFull
-            prefs[showDaysNewKey(appWidgetId)] = settings.showDaysToNew
-            prefs[hemisphereKey(appWidgetId)] = settings.hemisphere.name
-            prefs[iconPaddingKey(appWidgetId)] = settings.iconPaddingDp.toString()
-            prefs[lineStrokeKey(appWidgetId)] = settings.lineStrokeDp.toString()
-            prefs[moonDiameterKey(appWidgetId)] = settings.moonDiameterPct.toString()
-            prefs[wobbleEnabledKey(appWidgetId)] = settings.wobbleEnabled
-            prefs[latitudeKey(appWidgetId)] = settings.latitudeDeg.toString()
-            prefs[longitudeKey(appWidgetId)] = settings.longitudeDeg.toString()
+            prefs[stringKey(appWidgetId, "style")] = settings.style.name
+            prefs[boolKey(appWidgetId, "show_phase")] = settings.showPhaseName
+            prefs[boolKey(appWidgetId, "show_illum")] = settings.showIllumination
+            prefs[boolKey(appWidgetId, "show_days_full")] = settings.showDaysToFull
+            prefs[boolKey(appWidgetId, "show_days_new")] = settings.showDaysToNew
+            prefs[stringKey(appWidgetId, "hemisphere")] = settings.hemisphere.name
+            prefs[stringKey(appWidgetId, "icon_padding_dp")] = settings.iconPaddingDp.toString()
+            prefs[stringKey(appWidgetId, "line_stroke_dp")] = settings.lineStrokeDp.toString()
+            prefs[stringKey(appWidgetId, "moon_diameter_pct")] = settings.moonDiameterPct.toString()
+            prefs[boolKey(appWidgetId, "wobble_enabled")] = settings.wobbleEnabled
+            prefs[stringKey(appWidgetId, "latitude_deg")] = settings.latitudeDeg.toString()
+            prefs[stringKey(appWidgetId, "longitude_deg")] = settings.longitudeDeg.toString()
         }
     }
 
-    private fun Preferences.toSettings(id: Int) = WidgetSettings(
-        style = this[styleKey(id)]?.let { runCatching { WidgetStyle.valueOf(it) }.getOrNull() }
-            ?: WidgetSettings().style,
-        showPhaseName = this[showPhaseKey(id)] ?: WidgetSettings().showPhaseName,
-        showIllumination = this[showIllumKey(id)] ?: WidgetSettings().showIllumination,
-        showDaysToFull = this[showDaysFullKey(id)] ?: WidgetSettings().showDaysToFull,
-        showDaysToNew = this[showDaysNewKey(id)] ?: WidgetSettings().showDaysToNew,
-        hemisphere = this[hemisphereKey(id)]?.let { runCatching { Hemisphere.valueOf(it) }.getOrNull() }
-            ?: WidgetSettings().hemisphere,
-        iconPaddingDp = this[iconPaddingKey(id)]?.toIntOrNull()?.coerceIn(0, 24)
-            ?: WidgetSettings().iconPaddingDp,
-        lineStrokeDp = this[lineStrokeKey(id)]?.toIntOrNull()?.coerceIn(1, 8)
-            ?: WidgetSettings().lineStrokeDp,
-        moonDiameterPct = this[moonDiameterKey(id)]?.toIntOrNull()?.coerceIn(40, 100)
-            ?: WidgetSettings().moonDiameterPct,
-        wobbleEnabled = this[wobbleEnabledKey(id)] ?: WidgetSettings().wobbleEnabled,
-        latitudeDeg = this[latitudeKey(id)]?.toDoubleOrNull()?.coerceIn(-90.0, 90.0)
-            ?: WidgetSettings().latitudeDeg,
-        longitudeDeg = this[longitudeKey(id)]?.toDoubleOrNull()?.coerceIn(-180.0, 180.0)
-            ?: WidgetSettings().longitudeDeg,
-    )
+    private fun Preferences.toSettings(id: Int): WidgetSettings {
+        val defaults = WidgetSettings()
+        return WidgetSettings(
+            style = this[stringKey(id, "style")]?.let { runCatching { WidgetStyle.valueOf(it) }.getOrNull() }
+                ?: defaults.style,
+            showPhaseName = this[boolKey(id, "show_phase")] ?: defaults.showPhaseName,
+            showIllumination = this[boolKey(id, "show_illum")] ?: defaults.showIllumination,
+            showDaysToFull = this[boolKey(id, "show_days_full")] ?: defaults.showDaysToFull,
+            showDaysToNew = this[boolKey(id, "show_days_new")] ?: defaults.showDaysToNew,
+            hemisphere = this[stringKey(id, "hemisphere")]?.let { runCatching { Hemisphere.valueOf(it) }.getOrNull() }
+                ?: defaults.hemisphere,
+            iconPaddingDp = this[stringKey(id, "icon_padding_dp")]?.toIntOrNull()?.coerceIn(0, 24)
+                ?: defaults.iconPaddingDp,
+            lineStrokeDp = this[stringKey(id, "line_stroke_dp")]?.toIntOrNull()?.coerceIn(1, 8)
+                ?: defaults.lineStrokeDp,
+            moonDiameterPct = this[stringKey(id, "moon_diameter_pct")]?.toIntOrNull()?.coerceIn(40, 100)
+                ?: defaults.moonDiameterPct,
+            wobbleEnabled = this[boolKey(id, "wobble_enabled")] ?: defaults.wobbleEnabled,
+            latitudeDeg = this[stringKey(id, "latitude_deg")]?.toDoubleOrNull()?.coerceIn(-90.0, 90.0)
+                ?: defaults.latitudeDeg,
+            longitudeDeg = this[stringKey(id, "longitude_deg")]?.toDoubleOrNull()?.coerceIn(-180.0, 180.0)
+                ?: defaults.longitudeDeg,
+        )
+    }
 }
