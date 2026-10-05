@@ -453,10 +453,8 @@ private fun previewStateFromFraction(phaseFraction: Float, settings: WidgetSetti
     return base.copy(phase = MoonPhase.fromAgeDays(base.ageDays))
 }
 
-private fun previewPhaseLabel(phaseFraction: Float): String {
-    val state = previewStateFromFraction(phaseFraction, WidgetSettings())
-    return state.phase.shortName
-}
+private fun previewPhaseLabel(phaseFraction: Float): String =
+    MoonPhase.fromAgeDays(phaseFraction.coerceIn(0f, 1f).toDouble() * SYNODIC_MONTH_DAYS).shortName
 
 private fun daysUntilTarget(currentFraction: Double, targetFraction: Double): Double {
     val wrapped = if (targetFraction >= currentFraction) {
