@@ -51,23 +51,6 @@ class WidgetSettingsRepo(private val context: Context) {
         }
     }
 
-    suspend fun delete(appWidgetId: Int) {
-        context.dataStore.edit { prefs ->
-            prefs.remove(styleKey(appWidgetId))
-            prefs.remove(showPhaseKey(appWidgetId))
-            prefs.remove(showIllumKey(appWidgetId))
-            prefs.remove(showDaysFullKey(appWidgetId))
-            prefs.remove(showDaysNewKey(appWidgetId))
-            prefs.remove(hemisphereKey(appWidgetId))
-            prefs.remove(iconPaddingKey(appWidgetId))
-            prefs.remove(lineStrokeKey(appWidgetId))
-            prefs.remove(moonDiameterKey(appWidgetId))
-            prefs.remove(wobbleEnabledKey(appWidgetId))
-            prefs.remove(latitudeKey(appWidgetId))
-            prefs.remove(longitudeKey(appWidgetId))
-        }
-    }
-
     private fun Preferences.toSettings(id: Int) = WidgetSettings(
         style = this[styleKey(id)]?.let { runCatching { WidgetStyle.valueOf(it) }.getOrNull() }
             ?: WidgetSettings().style,
