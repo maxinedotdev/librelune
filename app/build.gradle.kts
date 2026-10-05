@@ -93,7 +93,6 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.work.runtime.ktx)
-    implementation(libs.startup.runtime)
     implementation(libs.commons.suncalc)
 
     testImplementation(kotlin("test"))
