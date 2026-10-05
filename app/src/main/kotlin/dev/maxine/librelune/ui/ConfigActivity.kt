@@ -152,6 +152,21 @@ private fun ConfigScreen(
         longitudeDeg = saved.longitudeDeg.toFloat()
     }
 
+    fun currentSettings() = WidgetSettings(
+        style = style,
+        showPhaseName = showPhaseName,
+        showIllumination = showIllumination,
+        showDaysToFull = showDaysToFull,
+        showDaysToNew = showDaysToNew,
+        hemisphere = hemisphere,
+        iconPaddingDp = iconPaddingDp.toInt().coerceIn(0, 24),
+        lineStrokeDp = lineStrokeDp.toInt().coerceIn(1, 8),
+        moonDiameterPct = moonDiameterPct.toInt().coerceIn(40, 100),
+        wobbleEnabled = wobbleEnabled,
+        latitudeDeg = latitudeDeg.toDouble().coerceIn(-90.0, 90.0),
+        longitudeDeg = longitudeDeg.toDouble().coerceIn(-180.0, 180.0),
+    )
+
     Scaffold(
         topBar = { TopAppBar(title = { Text("Configure Widget") }) },
     ) { padding ->
@@ -282,20 +297,7 @@ private fun ConfigScreen(
             }
 
             Text("Phase preview", style = MaterialTheme.typography.labelLarge)
-            val previewSettings = WidgetSettings(
-                style = style,
-                showPhaseName = showPhaseName,
-                showIllumination = showIllumination,
-                showDaysToFull = showDaysToFull,
-                showDaysToNew = showDaysToNew,
-                hemisphere = hemisphere,
-                iconPaddingDp = iconPaddingDp.toInt().coerceIn(0, 24),
-                lineStrokeDp = lineStrokeDp.toInt().coerceIn(1, 8),
-                moonDiameterPct = moonDiameterPct.toInt().coerceIn(40, 100),
-                wobbleEnabled = wobbleEnabled,
-                latitudeDeg = latitudeDeg.toDouble().coerceIn(-90.0, 90.0),
-                longitudeDeg = longitudeDeg.toDouble().coerceIn(-180.0, 180.0),
-            )
+            val previewSettings = currentSettings()
             MoonPreviewCard(
                 settings = previewSettings,
                 phaseFraction = previewPhaseFraction,
@@ -321,24 +323,7 @@ private fun ConfigScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             ) {
                 OutlinedButton(onClick = onCancel) { Text("Cancel") }
-                Button(onClick = {
-                    onSave(
-                        WidgetSettings(
-                            style = style,
-                            showPhaseName = showPhaseName,
-                            showIllumination = showIllumination,
-                            showDaysToFull = showDaysToFull,
-                            showDaysToNew = showDaysToNew,
-                            hemisphere = hemisphere,
-                            iconPaddingDp = iconPaddingDp.toInt().coerceIn(0, 24),
-                            lineStrokeDp = lineStrokeDp.toInt().coerceIn(1, 8),
-                            moonDiameterPct = moonDiameterPct.toInt().coerceIn(40, 100),
-                            wobbleEnabled = wobbleEnabled,
-                            latitudeDeg = latitudeDeg.toDouble().coerceIn(-90.0, 90.0),
-                            longitudeDeg = longitudeDeg.toDouble().coerceIn(-180.0, 180.0),
-                        )
-                    )
-                }) { Text("Save") }
+                Button(onClick = { onSave(currentSettings()) }) { Text("Save") }
             }
         }
     }
