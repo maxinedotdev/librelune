@@ -16,7 +16,6 @@ import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
-import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import dev.maxine.librelune.data.WidgetSettings
 import dev.maxine.librelune.moon.MoonState
@@ -25,16 +24,13 @@ import dev.maxine.librelune.widget.MoonLineBitmapFactory
 @Composable
 fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
     val size = LocalSize.current
-    val compact = size.width <= 120.dp || size.height <= 120.dp
+    val compact = isCompact(size)
     val iconPadding = settings.iconPaddingDp.coerceIn(0, 24).dp
     val lineStroke = settings.lineStrokeDp.coerceIn(1, 8).toFloat()
     val diameterPct = settings.moonDiameterPct.coerceIn(40, 100)
-    val hasAnyText = settings.showPhaseName || settings.showIllumination ||
-        settings.showDaysToFull || settings.showDaysToNew
 
     // Moon keeps the full minimum-dimension diameter regardless of text.
-    val minDimension = if (size.width < size.height) size.width else size.height
-    val moonDiameter = minDimension * (diameterPct / 100f)
+    val moonDiameter = moonBaseDiameter(size, diameterPct)
     val edgeTouch = diameterPct >= 100
     val effectiveIconPadding = if (edgeTouch) 0.dp else iconPadding
 
@@ -73,18 +69,16 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 .padding(effectiveIconPadding),
         )
 
-        if (hasAnyText && layout.darkRegionWidth > 0.dp) {
-            GlanceWidgetTextColumn(
-                state = state,
-                settings = settings,
-                compact = compact,
-                layout = layout,
-                styles = WidgetTextStyles(
-                    phaseName = widgetTextStyle(0xFFE8EEF9, if (compact) 10.sp else 12.sp, FontWeight.Medium),
-                    illumination = widgetTextStyle(0xFFAEB9CC, if (compact) 9.sp else 11.sp),
-                    days = widgetTextStyle(0xFF8D99AE, if (compact) 9.sp else 10.sp),
-                ),
-            )
-        }
+        MoonTextIfFits(
+            state = state,
+            settings = settings,
+            compact = compact,
+            layout = layout,
+            styles = WidgetTextStyles(
+                phaseName = widgetTextStyle(0xFFE8EEF9, if (compact) 10.sp else 12.sp, FontWeight.Medium),
+                illumination = widgetTextStyle(0xFFAEB9CC, if (compact) 9.sp else 11.sp),
+                days = widgetTextStyle(0xFF8D99AE, if (compact) 9.sp else 10.sp),
+            ),
+        )
     }
 }

@@ -3,6 +3,7 @@ package dev.maxine.librelune.widget.styles
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.layout.Alignment
@@ -78,3 +79,25 @@ internal fun widgetTextStyle(
     fontSize = fontSize,
     fontWeight = fontWeight,
 )
+
+/** Renders the text column only when some text is enabled and it fits the dark side. */
+@Composable
+internal fun MoonTextIfFits(
+    state: MoonState,
+    settings: WidgetSettings,
+    compact: Boolean,
+    layout: MoonLayout,
+    styles: WidgetTextStyles,
+) {
+    val hasAnyText = settings.showPhaseName || settings.showIllumination ||
+        settings.showDaysToFull || settings.showDaysToNew
+    if (hasAnyText && layout.darkRegionWidth > 0.dp) {
+        GlanceWidgetTextColumn(
+            state = state,
+            settings = settings,
+            compact = compact,
+            layout = layout,
+            styles = styles,
+        )
+    }
+}

@@ -1,6 +1,7 @@
 package dev.maxine.librelune.widget.styles
 
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import dev.maxine.librelune.data.Hemisphere
 import dev.maxine.librelune.moon.MoonState
@@ -36,6 +37,14 @@ internal fun litSideOnRight(phaseFraction: Double, hemisphere: Hemisphere): Bool
         Hemisphere.NORTHERN -> phaseFraction < 0.5
         Hemisphere.SOUTHERN -> phaseFraction >= 0.5
     }
+
+internal fun isCompact(size: DpSize): Boolean =
+    size.width <= 120.dp || size.height <= 120.dp
+
+internal fun moonBaseDiameter(size: DpSize, moonDiameterPct: Int): Dp {
+    val minDimension = if (size.width < size.height) size.width else size.height
+    return minDimension * (moonDiameterPct.coerceIn(40, 100) / 100f)
+}
 
 internal fun moonLayout(
     state: MoonState,
