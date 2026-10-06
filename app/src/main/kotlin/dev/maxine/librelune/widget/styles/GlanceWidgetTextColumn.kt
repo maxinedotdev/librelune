@@ -33,7 +33,6 @@ internal data class WidgetTextStyles(
 internal fun GlanceWidgetTextColumn(
     state: MoonState,
     settings: WidgetSettings,
-    compact: Boolean,
     layout: MoonLayout,
     styles: WidgetTextStyles,
 ) {

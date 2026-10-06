@@ -80,7 +80,6 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
         GlanceWidgetTextColumn(
             state = state,
             settings = settings,
-            compact = compact,
             layout = layout,
             styles = WidgetTextStyles(
                 phaseName = widgetTextStyle(0xFFFFFFFF, if (compact) 9.sp else 11.sp),

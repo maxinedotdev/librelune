@@ -72,7 +72,6 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
         GlanceWidgetTextColumn(
             state = state,
             settings = settings,
-            compact = compact,
             layout = layout,
             styles = WidgetTextStyles(
                 phaseName = widgetTextStyle(0xFFE8EEF9, if (compact) 10.sp else 12.sp, FontWeight.Medium),
