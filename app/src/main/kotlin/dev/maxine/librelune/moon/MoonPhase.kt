@@ -19,17 +19,7 @@ enum class MoonPhase(val displayName: String, val shortName: String) {
         fun fromAgeDays(ageDays: Double): MoonPhase {
             val age = ((ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS
 
-            return when {
-                age < OCTANT_DAYS / 2 -> NEW
-                age < OCTANT_DAYS * 1.5 -> WAXING_CRESCENT
-                age < OCTANT_DAYS * 2.5 -> FIRST_QUARTER
-                age < OCTANT_DAYS * 3.5 -> WAXING_GIBBOUS
-                age < OCTANT_DAYS * 4.5 -> FULL
-                age < OCTANT_DAYS * 5.5 -> WANING_GIBBOUS
-                age < OCTANT_DAYS * 6.5 -> THIRD_QUARTER
-                age < OCTANT_DAYS * 7.5 -> WANING_CRESCENT
-                else -> NEW
-            }
+            return entries.firstOrNull { age < OCTANT_DAYS * (it.ordinal + 0.5) } ?: NEW
         }
 
         fun fromAstronomy(phaseAngleDeg: Double, fraction: Double): MoonPhase {
