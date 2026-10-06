@@ -5,19 +5,19 @@ import io.github.cosinekitty.astronomy.Aberration
 import io.github.cosinekitty.astronomy.Body
 import io.github.cosinekitty.astronomy.EquatorEpoch
 import io.github.cosinekitty.astronomy.Observer
+import io.github.cosinekitty.astronomy.Refraction
 import io.github.cosinekitty.astronomy.Time
 import io.github.cosinekitty.astronomy.equator
-import io.github.cosinekitty.astronomy.hourAngle
+import io.github.cosinekitty.astronomy.horizon
 import io.github.cosinekitty.astronomy.illumination
 import io.github.cosinekitty.astronomy.moonPhase
+import io.github.cosinekitty.astronomy.rotationEqdHor
 import io.github.cosinekitty.astronomy.searchMoonPhase
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.math.atan2
-import kotlin.math.cos
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 private const val PHASE_SEARCH_DAYS = 35.0
 
@@ -51,23 +51,15 @@ class MoonCalculator(
             val observer = Observer(latitude, longitude, 0.0)
             val moon = equator(Body.Moon, time, observer, EquatorEpoch.OfDate, Aberration.Corrected)
             val sun = equator(Body.Sun, time, observer, EquatorEpoch.OfDate, Aberration.Corrected)
-            val deltaRa = Math.toRadians((sun.ra - moon.ra) * 15.0)
-            val moonDec = Math.toRadians(moon.dec)
-            val sunDec = Math.toRadians(sun.dec)
-            val brightLimbDeg = Math.toDegrees(atan2(
-                cos(sunDec) * sin(deltaRa),
-                sin(sunDec) * cos(moonDec) -
-                    cos(sunDec) * sin(moonDec) * cos(deltaRa),
-            ))
+            // Keep geometric coordinates: refraction would change the existing tilt.
+            val moonHorizon = horizon(time, observer, moon.ra, moon.dec, Refraction.None)
 
-            val hourAngleRad = Math.toRadians(hourAngle(Body.Moon, time, observer) * 15.0)
-            val latitudeRad = Math.toRadians(latitude)
-            val parallacticAngleDeg = Math.toDegrees(atan2(
-                sin(hourAngleRad) * cos(latitudeRad),
-                sin(latitudeRad) * cos(moonDec) -
-                    cos(latitudeRad) * sin(moonDec) * cos(hourAngleRad),
-            ))
-            val trueLimbDeg = -(brightLimbDeg - parallacticAngleDeg).toFloat()
+            // Point the horizontal frame at the Moon: x toward it, y screen-left, z screen-up.
+            val moonFrame = rotationEqdHor(time, observer)
+                .pivot(2, moonHorizon.azimuth)
+                .pivot(1, moonHorizon.altitude)
+            val sunInMoonFrame = moonFrame.rotate(sun.vec)
+            val trueLimbDeg = -Math.toDegrees(atan2(sunInMoonFrame.y, sunInMoonFrame.z)).toFloat()
 
             // The base artwork (and the procedural line path) already draws the
             // illuminated limb at a canonical orientation: 90deg (right) when the
