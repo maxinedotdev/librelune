@@ -32,21 +32,13 @@ enum class MoonPhase(val displayName: String, val shortName: String) {
             }
         }
 
-        /**
-         * Resolve a user-facing phase name from illumination properties.
-         *
-         * This follows the common/NASA-style classification:
-         * - waxing/waning from angle sign
-         * - crescent/gibbous from fraction (<50% / >50%)
-         * - quarter only in a narrow band around 50%
-         */
-        fun fromIllumination(fraction: Double, angleDeg: Double): MoonPhase {
+        fun fromAstronomy(phaseAngleDeg: Double, fraction: Double): MoonPhase {
             val f = fraction.coerceIn(0.0, 1.0)
 
             if (f <= 0.02) return NEW
             if (f >= 0.98) return FULL
 
-            val isWaning = angleDeg > 0.0
+            val isWaning = phaseAngleDeg >= 180.0
             val isQuarterBand = f in 0.48..0.52
 
             return when {

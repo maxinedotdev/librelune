@@ -6,7 +6,7 @@ compose-activity = "1.13.0"
 glance = "1.1.1"
 datastore = "1.2.1"
 work = "2.12.0"
-commons-suncalc = "3.11"
+astronomy-engine = "2.1.19"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
@@ -16,7 +16,7 @@ glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = 
 glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glance" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
-commons-suncalc = { module = "org.shredzone.commons:commons-suncalc", version.ref = "commons-suncalc" }
+astronomy-engine = { module = "io.github.cosinekitty:astronomy", version.ref = "astronomy-engine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

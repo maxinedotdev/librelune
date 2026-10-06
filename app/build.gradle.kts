@@ -89,7 +89,7 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.work.runtime.ktx)
-    implementation(libs.commons.suncalc)
+    implementation(libs.astronomy.engine)
 
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))

@@ -216,7 +216,7 @@ private fun ConfigScreen(
             Text("Wobble (location-based)", style = MaterialTheme.typography.labelLarge)
             SwitchRow("Enable lunar wobble", wobbleEnabled) { wobbleEnabled = it }
             Text(
-                "Uses commons-suncalc MoonPosition parallactic angle. Set your coordinates manually.",
+                "Uses Astronomy Engine's apparent Sun and Moon positions. Set your coordinates manually.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -467,13 +467,11 @@ private fun daysUntilTarget(currentFraction: Double, targetFraction: Double): Do
 
 private fun approximateWobbleDeg(latitudeDeg: Double, phaseFraction: Double): Float {
     // Visible wobble even at the equator: a base sweep plus a latitude-dependent
-    // term, modulated by the lunar cycle. This matches the spirit of the
-    // observer-facing tilt without requiring the suncalc topocentric pipeline
-    // for the preview.
+    // term, modulated by the lunar cycle. This keeps the preview responsive
+    // without running observer-position calculations for a synthetic phase.
     val latFactor = (latitudeDeg.coerceIn(-90.0, 90.0) / 90.0)
     val cycle = cos(2.0 * PI * phaseFraction)
     val baseDeg = 12.0
     val latDeg = 18.0 * latFactor
     return ((baseDeg + latDeg) * cycle).toFloat()
 }
-

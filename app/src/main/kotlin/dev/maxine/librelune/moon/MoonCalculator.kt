@@ -1,14 +1,25 @@
 package dev.maxine.librelune.moon
 
 import dev.maxine.librelune.data.Hemisphere
-import java.time.Duration
+import io.github.cosinekitty.astronomy.Aberration
+import io.github.cosinekitty.astronomy.Body
+import io.github.cosinekitty.astronomy.EquatorEpoch
+import io.github.cosinekitty.astronomy.Observer
+import io.github.cosinekitty.astronomy.Time
+import io.github.cosinekitty.astronomy.equator
+import io.github.cosinekitty.astronomy.hourAngle
+import io.github.cosinekitty.astronomy.illumination
+import io.github.cosinekitty.astronomy.moonPhase
+import io.github.cosinekitty.astronomy.searchMoonPhase
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import kotlin.math.PI
-import kotlin.math.acos
+import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.roundToInt
-import org.shredzone.commons.suncalc.MoonIllumination
-import org.shredzone.commons.suncalc.MoonPosition
+import kotlin.math.sin
+
+private const val PHASE_SEARCH_DAYS = 35.0
 
 class MoonCalculator(
     private val zoneId: ZoneId = ZoneId.systemDefault(),
@@ -20,57 +31,43 @@ class MoonCalculator(
     fun now(now: ZonedDateTime = ZonedDateTime.now(zoneId)): MoonState {
         val latitude = latitudeDeg.coerceIn(-90.0, 90.0)
         val longitude = longitudeDeg.coerceIn(-180.0, 180.0)
+        val time = now.toAstronomyTime()
 
-        // Geocentric illumination (no observer correction) drives the phase
-        // classification: toggling the wobble option must NOT change which phase
-        // bucket the moon falls into.
-        val illumination = MoonIllumination.compute()
-            .on(now)
-            .execute()
-
-        val nextFull = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now)
-            .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.FULL_MOON)
-            .execute()
-            .time
-
-        val nextNew = org.shredzone.commons.suncalc.MoonPhase.compute()
-            .on(now)
-            .phase(org.shredzone.commons.suncalc.MoonPhase.Phase.NEW_MOON)
-            .execute()
-            .time
-
-        // Compute synodic age (0..29.53d) from a robust pair:
-        //   - illumination.fraction      : 0..1 illuminated disk fraction
-        //   - sign of illumination.angle : negative => waxing, positive => waning
-        // ageDays = waxingHalf when waxing, else (synodic - waxingHalf).
-        val fraction = illumination.fraction.coerceIn(0.0, 1.0)
-        val waxingHalfDays = (acos(1.0 - 2.0 * fraction) / PI) * (SYNODIC_MONTH_DAYS / 2.0)
-        val isWaning = illumination.angle > 0.0
-        val ageDays = (if (isWaning) SYNODIC_MONTH_DAYS - waxingHalfDays else waxingHalfDays)
-            .coerceIn(0.0, SYNODIC_MONTH_DAYS)
-        val phase = MoonPhase.fromIllumination(
-            fraction = illumination.fraction,
-            angleDeg = illumination.angle,
-        )
+        val phaseAngle = moonPhase(time)
+        val moonIllumination = illumination(Body.Moon, time)
+        val previousNew = requireNotNull(searchMoonPhase(0.0, time, -PHASE_SEARCH_DAYS)) {
+            "Could not find previous new moon"
+        }
+        val nextFull = requireNotNull(searchMoonPhase(180.0, time, PHASE_SEARCH_DAYS)) {
+            "Could not find next full moon"
+        }
+        val nextNew = requireNotNull(searchMoonPhase(0.0, time, PHASE_SEARCH_DAYS)) {
+            "Could not find next new moon"
+        }
+        val ageDays = (time.ut - previousNew.ut).coerceAtLeast(0.0)
+        val phase = MoonPhase.fromAstronomy(phaseAngle, moonIllumination.phaseFraction)
 
         val wobbleDeg = if (wobbleEnabled) {
-            val topoIllumination = MoonIllumination.compute()
-                .on(now)
-                .at(latitude, longitude)
-                .execute()
-            val moonPosition = MoonPosition.compute()
-                .on(now)
-                .at(latitude, longitude)
-                .execute()
+            val observer = Observer(latitude, longitude, 0.0)
+            val moon = equator(Body.Moon, time, observer, EquatorEpoch.OfDate, Aberration.Corrected)
+            val sun = equator(Body.Sun, time, observer, EquatorEpoch.OfDate, Aberration.Corrected)
+            val deltaRa = Math.toRadians((sun.ra - moon.ra) * 15.0)
+            val moonDec = Math.toRadians(moon.dec)
+            val sunDec = Math.toRadians(sun.dec)
+            val brightLimbDeg = Math.toDegrees(atan2(
+                cos(sunDec) * sin(deltaRa),
+                sin(sunDec) * cos(moonDec) -
+                    cos(sunDec) * sin(moonDec) * cos(deltaRa),
+            ))
 
-            // Observer-facing orientation of the bright limb (zenith angle):
-            // MoonIllumination.angle - MoonPosition.parallacticAngle
-            // suncalc expresses this angle as anticlockwise-positive, while
-            // Android Canvas rotation is clockwise-positive, so invert sign.
-            // This yields the true clockwise-from-zenith angle of the
-            // illuminated limb.
-            val trueLimbDeg = -(topoIllumination.angle - moonPosition.parallacticAngle).toFloat()
+            val hourAngleRad = Math.toRadians(hourAngle(Body.Moon, time, observer) * 15.0)
+            val latitudeRad = Math.toRadians(latitude)
+            val parallacticAngleDeg = Math.toDegrees(atan2(
+                sin(hourAngleRad) * cos(latitudeRad),
+                sin(latitudeRad) * cos(moonDec) -
+                    cos(latitudeRad) * sin(moonDec) * cos(hourAngleRad),
+            ))
+            val trueLimbDeg = -(brightLimbDeg - parallacticAngleDeg).toFloat()
 
             // The base artwork (and the procedural line path) already draws the
             // illuminated limb at a canonical orientation: 90deg (right) when the
@@ -80,8 +77,8 @@ class MoonCalculator(
             // only the residual observer tilt is applied, then keep a bounded
             // decorative tilt.
             val litRight = when (hemisphere) {
-                Hemisphere.NORTHERN -> !isWaning
-                Hemisphere.SOUTHERN -> isWaning
+                Hemisphere.NORTHERN -> phaseAngle < 180.0
+                Hemisphere.SOUTHERN -> phaseAngle >= 180.0
             }
             val baseLimbDeg = if (litRight) 90f else 270f
 
@@ -92,13 +89,19 @@ class MoonCalculator(
 
         return MoonState(
             phase = phase,
-            illuminationPct = (illumination.fraction * 100.0).roundToInt().coerceIn(0, 100),
+            illuminationPct = (moonIllumination.phaseFraction * 100.0).roundToInt().coerceIn(0, 100),
             ageDays = ageDays,
-            daysToFull = Duration.between(now, nextFull).toHours().toDouble() / 24.0,
-            daysToNew = Duration.between(now, nextNew).toHours().toDouble() / 24.0,
+            daysToFull = nextFull.ut - time.ut,
+            daysToNew = nextNew.ut - time.ut,
             wobbleDeg = wobbleDeg,
+            phaseFraction = phaseAngle / 360.0,
         )
     }
+}
+
+private fun ZonedDateTime.toAstronomyTime(): Time {
+    val utc = withZoneSameInstant(ZoneOffset.UTC)
+    return Time(utc.year, utc.monthValue, utc.dayOfMonth, utc.hour, utc.minute, utc.second + utc.nano / 1e9)
 }
 
 private fun normalizeSignedDegrees(angle: Float): Float {
@@ -117,14 +120,7 @@ data class MoonState(
     val daysToFull: Double,
     val daysToNew: Double,
     val wobbleDeg: Float = 0f,
-) {
-    /**
-     * Position within the synodic cycle, normalized to 0..1 with 0 at new
-     * moon and 0.5 at full moon. Wraps negative ages into range.
-     */
-    val phaseFraction: Double
-        get() {
-            val wrapped = ((ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS
-            return wrapped / SYNODIC_MONTH_DAYS
-        }
-}
+    /** Astronomy Engine's phase angle normalized from 0 (new) to 0.5 (full). */
+    val phaseFraction: Double =
+        (((ageDays % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS) / SYNODIC_MONTH_DAYS,
+)
