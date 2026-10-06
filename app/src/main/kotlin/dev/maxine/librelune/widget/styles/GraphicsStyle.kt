@@ -77,7 +77,7 @@ fun GraphicsStyle(state: MoonState, settings: WidgetSettings, clickAction: Actio
                 .size(moonImageDiameter),
         )
 
-        MoonTextIfFits(
+        GlanceWidgetTextColumn(
             state = state,
             settings = settings,
             compact = compact,

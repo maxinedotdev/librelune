@@ -69,7 +69,7 @@ fun LineStyle(state: MoonState, settings: WidgetSettings, clickAction: Action) {
                 .padding(effectiveIconPadding),
         )
 
-        MoonTextIfFits(
+        GlanceWidgetTextColumn(
             state = state,
             settings = settings,
             compact = compact,

@@ -28,6 +28,7 @@ internal data class WidgetTextStyles(
     val days: TextStyle,
 )
 
+/** Renders the text column only when some text is enabled and it fits the dark side. */
 @Composable
 internal fun GlanceWidgetTextColumn(
     state: MoonState,
@@ -36,6 +37,10 @@ internal fun GlanceWidgetTextColumn(
     layout: MoonLayout,
     styles: WidgetTextStyles,
 ) {
+    val hasAnyText = settings.showPhaseName || settings.showIllumination ||
+        settings.showDaysToFull || settings.showDaysToNew
+    if (!hasAnyText || layout.darkRegionWidth <= 0.dp) return
+
     Row(modifier = GlanceModifier.fillMaxSize()) {
         if (!layout.textOnLeft) {
             Spacer(modifier = GlanceModifier.defaultWeight())
@@ -79,25 +84,3 @@ internal fun widgetTextStyle(
     fontSize = fontSize,
     fontWeight = fontWeight,
 )
-
-/** Renders the text column only when some text is enabled and it fits the dark side. */
-@Composable
-internal fun MoonTextIfFits(
-    state: MoonState,
-    settings: WidgetSettings,
-    compact: Boolean,
-    layout: MoonLayout,
-    styles: WidgetTextStyles,
-) {
-    val hasAnyText = settings.showPhaseName || settings.showIllumination ||
-        settings.showDaysToFull || settings.showDaysToNew
-    if (hasAnyText && layout.darkRegionWidth > 0.dp) {
-        GlanceWidgetTextColumn(
-            state = state,
-            settings = settings,
-            compact = compact,
-            layout = layout,
-            styles = styles,
-        )
-    }
-}
