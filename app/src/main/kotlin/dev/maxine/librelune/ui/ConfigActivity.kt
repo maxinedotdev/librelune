@@ -441,16 +441,14 @@ private fun previewStateFromFraction(phaseFraction: Float, settings: WidgetSetti
     val normalized = phaseFraction.coerceIn(0f, 1f).toDouble()
     val ageDays = normalized * SYNODIC_MONTH_DAYS
     val illuminationPct = ((1.0 - cos(2.0 * PI * normalized)) * 50.0).roundToInt().coerceIn(0, 100)
-    val base = MoonState(
-        phase = MoonPhase.NEW,
+    return MoonState(
+        phase = MoonPhase.fromAgeDays(ageDays),
         illuminationPct = illuminationPct,
         ageDays = ageDays,
         daysToFull = daysUntilTarget(normalized, 0.5),
         daysToNew = daysUntilTarget(normalized, 0.0),
         wobbleDeg = if (settings.wobbleEnabled) approximateWobbleDeg(settings.latitudeDeg, normalized) else 0f,
     )
-
-    return base.copy(phase = MoonPhase.fromAgeDays(base.ageDays))
 }
 
 private fun previewPhaseLabel(phaseFraction: Float): String =
