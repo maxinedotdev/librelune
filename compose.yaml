@@ -1,0 +1,24 @@
+# Run unit tests with: docker compose run --rm android-test
+services:
+  android-test:
+    image: ghcr.io/cirruslabs/android-sdk:36
+    # Android's AAPT2 binary requires x86-64, including on Apple Silicon hosts.
+    platform: linux/amd64
+    working_dir: /workspace
+    volumes:
+      - .:/workspace:ro
+      - gradle-cache:/root/.gradle
+    command:
+      - bash
+      - -lc
+      - |
+        set -euo pipefail
+        mkdir -p /tmp/librelune
+        tar --exclude=./.git --exclude=./.gradle --exclude=./build \
+          --exclude=./app/build --exclude=./local.properties \
+          -cf - -C /workspace . | tar -xf - -C /tmp/librelune
+        cd /tmp/librelune
+        ./gradlew :app:testDebugUnitTest --no-daemon --no-watch-fs
+
+volumes:
+  gradle-cache:
