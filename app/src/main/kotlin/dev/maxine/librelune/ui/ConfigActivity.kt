@@ -456,13 +456,9 @@ private fun previewStateFromFraction(phaseFraction: Float, settings: WidgetSetti
 private fun previewPhaseLabel(phaseFraction: Float): String =
     MoonPhase.fromAgeDays(phaseFraction.coerceIn(0f, 1f).toDouble() * SYNODIC_MONTH_DAYS).shortName
 
-private fun daysUntilTarget(currentFraction: Double, targetFraction: Double): Double {
-    val wrapped = if (targetFraction >= currentFraction) {
-        targetFraction - currentFraction
-    } else {
-        1.0 - (currentFraction - targetFraction)
-    }
-    return wrapped * SYNODIC_MONTH_DAYS
+internal fun daysUntilTarget(currentFraction: Double, targetFraction: Double): Double {
+    val remaining = targetFraction - currentFraction
+    return (if (remaining < 0.0) remaining + 1.0 else remaining) * SYNODIC_MONTH_DAYS
 }
 
 private fun approximateWobbleDeg(latitudeDeg: Double, phaseFraction: Double): Float {
